@@ -74,4 +74,18 @@ public class PaymentRequest {
   public int hashCode() {
     return Objects.hash(type, amount, currency, debtorIban, creditorIban, bicCode, details);
   }
+
+  @Override
+  @Generated
+  public String toString() {
+    return "PaymentRequest{" +
+        "type='" + type + '\'' +
+        ", amount=" + amount +
+        ", currency='" + currency + '\'' +
+        ", debtorIban='" + debtorIban + '\'' +
+        ", creditorIban='" + creditorIban + '\'' +
+        ", bicCode='" + bicCode + '\'' +
+        ", details='" + details + '\'' +
+        '}';
+  }
 }

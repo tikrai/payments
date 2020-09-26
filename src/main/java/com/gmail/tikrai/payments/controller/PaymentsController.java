@@ -27,12 +27,12 @@ public class PaymentsController {
   }
 
   @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Payment>> getAllPending() {
+  public ResponseEntity<List<Payment>> findAllPending() {
     return new ResponseEntity<>(paymentsService.findAllPending(), HttpStatus.OK);
   }
 
   @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Payment> getById(
+  public ResponseEntity<Payment> findById(
       @PathVariable Integer id
   ) {
     return new ResponseEntity<>(paymentsService.findById(id), HttpStatus.OK);
@@ -46,7 +46,7 @@ public class PaymentsController {
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Payment> delete(
+  public ResponseEntity<Payment> cancel(
       @PathVariable("id") int id
   ) {
     return new ResponseEntity<>(paymentsService.cancel(id), HttpStatus.OK);

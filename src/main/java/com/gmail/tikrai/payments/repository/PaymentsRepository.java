@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PaymentsRepository {
 
-  private static final String TABLE = "payments";
+  public static final String TABLE = "payments";
   private static final String ID = "id";
   private static final String CANCELLED = "cancelled";
   private static final String TYPE = "type";
@@ -48,6 +48,11 @@ public class PaymentsRepository {
     this.db = db;
   }
 
+  public List<Payment> findAll() {
+    String sql = String.format("SELECT * FROM %s", TABLE);
+    return db.query(sql, rowMapper);
+  }
+
   public List<Payment> findAllPending() {
     String sql = String.format("SELECT * FROM %s WHERE %s = false", TABLE, CANCELLED);
     return db.query(sql, rowMapper);
@@ -72,7 +77,8 @@ public class PaymentsRepository {
         payment.details().map(code -> String.format("'%s'", code)).orElse(null),
         ID
     );
-    int id = db.query(sql, (rs, rowNum) -> rs.getInt(ID)).stream().findFirst().orElse(0);
+    List<Integer> query = db.query(sql, (rs, rowNum) -> rs.getInt(ID));
+    int id = query.stream().findFirst().orElse(0);
     return payment.withId(id);
   }
 

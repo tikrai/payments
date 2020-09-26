@@ -57,19 +57,13 @@ public class Payment {
   }
 
   public Payment withId(int id) {
-    return new Payment(
-        id,
-        cancelled,
-        type,
-        amount,
-        currency,
-        debtorIban,
-        creditorIban,
-        bicCode,
-        details,
-        ipAddress,
-        country
-    );
+    return new Payment(id, cancelled, type, amount, currency, debtorIban, creditorIban,
+        bicCode, details, ipAddress, country);
+  }
+
+  public Payment withCancelled(boolean cancelled) {
+    return new Payment(id, cancelled, type, amount, currency, debtorIban, creditorIban,
+        bicCode, details, ipAddress, country);
   }
 
   @JsonProperty("id")
@@ -156,5 +150,23 @@ public class Payment {
     return Objects
         .hash(id, cancelled, type, amount, currency, debtorIban, creditorIban, bicCode, details,
             ipAddress, country);
+  }
+
+  @Override
+  @Generated
+  public String toString() {
+    return "Payment{" +
+        "id=" + id +
+        ", cancelled=" + cancelled +
+        ", type=" + type +
+        ", amount=" + amount +
+        ", currency=" + currency +
+        ", debtorIban='" + debtorIban + '\'' +
+        ", creditorIban='" + creditorIban + '\'' +
+        ", bicCode='" + bicCode + '\'' +
+        ", details='" + details + '\'' +
+        ", ipAddress='" + ipAddress + '\'' +
+        ", country='" + country + '\'' +
+        '}';
   }
 }
