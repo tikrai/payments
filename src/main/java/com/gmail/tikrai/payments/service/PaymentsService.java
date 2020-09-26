@@ -1,8 +1,7 @@
 package com.gmail.tikrai.payments.service;
 
 import com.gmail.tikrai.payments.domain.Payment;
-import java.math.BigDecimal;
-import java.util.Collections;
+import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,34 +9,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class PaymentsService {
 
-  private static Payment dummyPayment = new Payment(
-      1,
-      "TYPE1",
-      BigDecimal.valueOf(1.1),
-      "EUR",
-      "from me",
-      "to you",
-      null,
-      null
-  );
+  private final PaymentsRepository paymentsRepository;
 
   @Autowired
-  public PaymentsService() {
-  }
-
-  public Payment findById(int id) {
-    return dummyPayment.withId(id);
-  }
-
-  public Payment create(Payment request) {
-    return request;
-  }
-
-  public Payment cancel(int id) {
-    return dummyPayment.withId(id);
+  public PaymentsService(PaymentsRepository paymentsRepository) {
+    this.paymentsRepository = paymentsRepository;
   }
 
   public List<Payment> findAllPending() {
-    return Collections.singletonList(dummyPayment);
+    return paymentsRepository.findAllPending();
+  }
+
+  public Payment findById(int id) {
+    return paymentsRepository.findById(id);
+  }
+
+  public Payment create(Payment payment) {
+    return paymentsRepository.create(payment);
+  }
+
+  public Payment cancel(int id) {
+    return paymentsRepository.cancel(id);
   }
 }

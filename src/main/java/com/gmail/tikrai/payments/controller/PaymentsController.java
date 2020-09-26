@@ -1,6 +1,7 @@
 package com.gmail.tikrai.payments.controller;
 
 import com.gmail.tikrai.payments.domain.Payment;
+import com.gmail.tikrai.payments.domain.PaymentRequest;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import java.util.List;
@@ -39,9 +40,9 @@ public class PaymentsController {
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Payment> create(
-      @RequestBody Payment request
+      @RequestBody PaymentRequest request
   ) {
-    return new ResponseEntity<>(paymentsService.create(request), HttpStatus.CREATED);
+    return new ResponseEntity<>(paymentsService.create(request.toDomain()), HttpStatus.CREATED);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

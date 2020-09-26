@@ -8,25 +8,38 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class Payment {
+
+  public enum Type {
+    TYPE1, TYPE2, TYPE3,
+  }
+
+  public enum Currency {
+    EUR, USD,
+  }
+
   private final int id;
-  private final String type;
+  private final Type type;
   private final BigDecimal amount;
-  private final String currency;
+  private final Currency currency;
   private final String debtorIban;
   private final String creditorIban;
   private final String bicCode;
   private final String details;
+  private final String ipAddress;
+  private final String country;
 
   @JsonCreator
   public Payment(
       int id,
-      String type,
+      Type type,
       BigDecimal amount,
-      String currency,
+      Currency currency,
       String debtorIban,
       String creditorIban,
       String bicCode,
-      String details
+      String details,
+      String ipAddress,
+      String country
   ) {
     this.id = id;
     this.type = type;
@@ -36,10 +49,23 @@ public class Payment {
     this.creditorIban = creditorIban;
     this.bicCode = bicCode;
     this.details = details;
+    this.ipAddress = ipAddress;
+    this.country = country;
   }
 
   public Payment withId(int id) {
-    return new Payment(id, type, amount, currency, debtorIban, creditorIban, bicCode, details);
+    return new Payment(
+        id,
+        type,
+        amount,
+        currency,
+        debtorIban,
+        creditorIban,
+        bicCode,
+        details,
+        ipAddress,
+        country
+    );
   }
 
   @JsonProperty("id")
@@ -48,7 +74,7 @@ public class Payment {
   }
 
   @JsonProperty("type")
-  public String type() {
+  public Type type() {
     return type;
   }
 
@@ -58,16 +84,16 @@ public class Payment {
   }
 
   @JsonProperty("currency")
-  public String currency() {
+  public Currency currency() {
     return currency;
   }
 
-  @JsonProperty("debtor_iban")
+  @JsonProperty("debtorIban")
   public String debtorIban() {
     return debtorIban;
   }
 
-  @JsonProperty("creditor_iban")
+  @JsonProperty("creditorIban")
   public String creditorIban() {
     return creditorIban;
   }
@@ -82,6 +108,16 @@ public class Payment {
     return Optional.ofNullable(details);
   }
 
+  @JsonProperty("ipAddress")
+  public Optional<String> ipAddress() {
+    return Optional.ofNullable(ipAddress);
+  }
+
+  @JsonProperty("country")
+  public Optional<String> country() {
+    return Optional.ofNullable(country);
+  }
+
   @Override
   @Generated
   public boolean equals(Object o) {
@@ -93,18 +129,22 @@ public class Payment {
     }
     Payment payment = (Payment) o;
     return id == payment.id
-        && Objects.equals(type, payment.type)
+        && type == payment.type
         && Objects.equals(amount, payment.amount)
-        && Objects.equals(currency, payment.currency)
+        && currency == payment.currency
         && Objects.equals(debtorIban, payment.debtorIban)
         && Objects.equals(creditorIban, payment.creditorIban)
         && Objects.equals(bicCode, payment.bicCode)
-        && Objects.equals(details, payment.details);
+        && Objects.equals(details, payment.details)
+        && Objects.equals(ipAddress, payment.ipAddress)
+        && Objects.equals(country, payment.country);
   }
 
   @Override
   @Generated
   public int hashCode() {
-    return Objects.hash(id, type, amount, currency, debtorIban, creditorIban, bicCode, details);
+    return Objects
+        .hash(id, type, amount, currency, debtorIban, creditorIban, bicCode, details, ipAddress,
+            country);
   }
 }
