@@ -60,7 +60,8 @@ public class PaymentsRepository {
 
   public Payment create(Payment payment) {
     String sql = String.format(
-        "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s) VALUES ('%s', %s, '%s', '%s', '%s', %s, %s) RETURNING %s",
+        "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s) "
+            + "VALUES ('%s', %s, '%s', '%s', '%s', %s, %s) RETURNING %s",
         TABLE, TYPE, AMOUNT, CURRENCY, DEBTOR_IBAN, CREDITOR_IBAN, BIC_CODE, DETAILS,
         payment.type().toString(),
         payment.amount().unscaledValue(),
