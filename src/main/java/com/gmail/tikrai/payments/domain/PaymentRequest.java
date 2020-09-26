@@ -1,6 +1,7 @@
 package com.gmail.tikrai.payments.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gmail.tikrai.payments.util.Generated;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -16,13 +17,13 @@ public class PaymentRequest {
 
   @JsonCreator
   public PaymentRequest(
-      String type,
-      BigDecimal amount,
-      String currency,
-      String debtorIban,
-      String creditorIban,
-      String bicCode,
-      String details
+      @JsonProperty("type") String type,
+      @JsonProperty("amount") BigDecimal amount,
+      @JsonProperty("currency") String currency,
+      @JsonProperty("debtor_iban") String debtorIban,
+      @JsonProperty("creditor_iban") String creditorIban,
+      @JsonProperty("bic_code") String bicCode,
+      @JsonProperty("details") String details
   ) {
     this.type = type;
     this.amount = amount;
@@ -36,6 +37,7 @@ public class PaymentRequest {
   public Payment toDomain() {
     return new Payment(
         0,
+        false,
         Payment.Type.valueOf(type),
         amount,
         Payment.Currency.valueOf(currency),

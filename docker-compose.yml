@@ -1,0 +1,9 @@
+postgres:
+  container_name: payments_postgres
+  build: docker/postgres
+  ports:
+    - "25432:5432"
+  environment:
+    - POSTGRES_DB=payments
+    - POSTGRES_USER=payments
+    - POSTGRES_PASSWORD=payments

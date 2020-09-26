@@ -18,6 +18,7 @@ public class Payment {
   }
 
   private final int id;
+  private final boolean cancelled;
   private final Type type;
   private final BigDecimal amount;
   private final Currency currency;
@@ -31,6 +32,7 @@ public class Payment {
   @JsonCreator
   public Payment(
       int id,
+      boolean cancelled,
       Type type,
       BigDecimal amount,
       Currency currency,
@@ -42,6 +44,7 @@ public class Payment {
       String country
   ) {
     this.id = id;
+    this.cancelled = cancelled;
     this.type = type;
     this.amount = amount.setScale(2, BigDecimal.ROUND_HALF_UP);
     this.currency = currency;
@@ -56,6 +59,7 @@ public class Payment {
   public Payment withId(int id) {
     return new Payment(
         id,
+        cancelled,
         type,
         amount,
         currency,
@@ -73,6 +77,11 @@ public class Payment {
     return id;
   }
 
+  @JsonProperty("cancelled")
+  public boolean cancelled() {
+    return cancelled;
+  }
+
   @JsonProperty("type")
   public Type type() {
     return type;
@@ -88,12 +97,12 @@ public class Payment {
     return currency;
   }
 
-  @JsonProperty("debtorIban")
+  @JsonProperty("debtor_iban")
   public String debtorIban() {
     return debtorIban;
   }
 
-  @JsonProperty("creditorIban")
+  @JsonProperty("creditor_iban")
   public String creditorIban() {
     return creditorIban;
   }
@@ -108,7 +117,7 @@ public class Payment {
     return Optional.ofNullable(details);
   }
 
-  @JsonProperty("ipAddress")
+  @JsonProperty("ip_address")
   public Optional<String> ipAddress() {
     return Optional.ofNullable(ipAddress);
   }
@@ -129,6 +138,7 @@ public class Payment {
     }
     Payment payment = (Payment) o;
     return id == payment.id
+        && cancelled == payment.cancelled
         && type == payment.type
         && Objects.equals(amount, payment.amount)
         && currency == payment.currency
@@ -144,7 +154,7 @@ public class Payment {
   @Generated
   public int hashCode() {
     return Objects
-        .hash(id, type, amount, currency, debtorIban, creditorIban, bicCode, details, ipAddress,
-            country);
+        .hash(id, cancelled, type, amount, currency, debtorIban, creditorIban, bicCode, details,
+            ipAddress, country);
   }
 }
