@@ -15,7 +15,7 @@ public class PaymentFixture {
   private String debtorIban = "LT0001";
   private String creditorIban = "LT9999";
   private String bicCode = "AGBLLT2X";
-  private String details = null;
+  private String details = "details";
   private String ipAddress = null;
   private String country = null;
 

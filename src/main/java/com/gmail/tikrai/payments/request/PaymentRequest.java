@@ -7,6 +7,7 @@ import com.gmail.tikrai.payments.util.Generated;
 import com.gmail.tikrai.payments.validation.Validator;
 import com.gmail.tikrai.payments.validation.ValidatorGroup;
 import com.gmail.tikrai.payments.validation.validators.NullValidator;
+import com.gmail.tikrai.payments.validation.validators.PaymentValidator;
 import com.gmail.tikrai.payments.validation.validators.RegexValidator;
 import com.gmail.tikrai.payments.validation.validators.SizeValidator;
 import java.math.BigDecimal;
@@ -116,7 +117,10 @@ public class PaymentRequest implements Validator {
             () -> SizeValidator.max("creditor_iban", creditorIban, 20).valid()
         ),
         () -> SizeValidator.max("bic_code", bicCode, 20).valid(),
-        () -> SizeValidator.max("details", details, 255).valid()
+        () -> SizeValidator.max("details", details, 255).valid(),
+        () -> PaymentValidator.ofType1(this).valid(),
+        () -> PaymentValidator.ofType2(this).valid(),
+        () -> PaymentValidator.ofType3(this).valid()
     ).valid();
   }
 

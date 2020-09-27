@@ -14,7 +14,7 @@ class PaymentTest {
   private final String paymentJson = "{"
       + "\"id\":0,\"cancelled\":false,\"type\":\"TYPE1\",\"amount\":10.01,"
       + "\"currency\":\"EUR\",\"debtor_iban\":\"LT0001\",\"creditor_iban\":\"LT9999\","
-      + "\"bic_code\":\"AGBLLT2X\"}";
+      + "\"bic_code\":\"AGBLLT2X\",\"details\":\"details\"}";
   private final Payment payment = Fixture.payment().build();
 
   @Test

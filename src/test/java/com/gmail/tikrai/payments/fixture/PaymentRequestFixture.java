@@ -13,7 +13,7 @@ public class PaymentRequestFixture {
   private String debtorIban = "LT0001";
   private String creditorIban = "LT9999";
   private String bicCode = "AGBLLT2X";
-  private String details = null;
+  private String details = "details";
 
   public PaymentRequestFixture type(String type) {
     this.type = type;

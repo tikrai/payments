@@ -73,7 +73,7 @@ class PaymentsRepositoryTest {
     assertThat(actual, equalTo(payment.withId(1)));
     String expectedQuery = "INSERT INTO "
         + "payments (type, amount, currency, debtor_iban, creditor_iban, bic_code, details) "
-        + "VALUES ('TYPE1', 1001, 'EUR', 'LT0001', 'LT9999', 'AGBLLT2X', null) "
+        + "VALUES ('TYPE1', 1001, 'EUR', 'LT0001', 'LT9999', 'AGBLLT2X', 'details') "
         + "RETURNING id";
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
     verifyNoMoreInteractions(db);

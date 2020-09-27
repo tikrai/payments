@@ -14,102 +14,106 @@ class PaymentRequestTest {
 
   private final ObjectMapper mapper = Fixture.mapper();
   private final String paymentJson = "{"
-      + "\"type\":\"TYPE1\",\"amount\":10.01,\"currency\":\"EUR\","
-      + "\"debtor_iban\":\"LT0001\",\"creditor_iban\":\"LT9999\",\"bic_code\":\"AGBLLT2X\""
+      + "\"type\":\"TYPE1\",\"amount\":10.01,\"currency\":\"EUR\",\"debtor_iban\":\"LT0001\","
+      + "\"creditor_iban\":\"LT9999\",\"bic_code\":\"AGBLLT2X\",\"details\":\"details\""
       + "}";
   private final PaymentRequestFixture requestFixture = Fixture.paymentRequest();
-  private final PaymentRequest paymentRequest = requestFixture.build();
+
+  private PaymentRequest paymentRequest;
 
   @Test
   void shouldSerializePaymentRequest() throws JsonProcessingException {
+    paymentRequest = requestFixture.build();
     String serialized = mapper.writeValueAsString(paymentRequest);
     assertThat(serialized, equalTo(paymentJson));
   }
 
   @Test
   void shouldDeserializePaymentRequest() throws JsonProcessingException {
+    paymentRequest = requestFixture.build();
     PaymentRequest deserialized = mapper.readValue(paymentJson, PaymentRequest.class);
     assertThat(deserialized, equalTo(paymentRequest));
   }
 
   @Test
   void shouldValidatePaymentRequestSuccessfully() {
+    paymentRequest = requestFixture.build();
     assertThat(paymentRequest.valid(), isOptionalOf(null));
   }
 
   @Test
   void shouldFailValidatingIfTypeIsNull() {
-    PaymentRequest paymentRequest = requestFixture.type(null).build();
+    paymentRequest = requestFixture.type(null).build();
     assertThat(paymentRequest.valid(), isOptionalOf("'type' cannot be null"));
   }
 
   @Test
   void shouldFailValidatingIfTypeIsInvalid() {
-    PaymentRequest paymentRequest = requestFixture.type("EUR").build();
+    paymentRequest = requestFixture.type("EUR").build();
     assertThat(paymentRequest.valid(), isOptionalOf("'type' value 'EUR' is not valid"));
   }
 
   @Test
   void shouldFailValidatingIfAmountIsNull() {
-    PaymentRequest paymentRequest = requestFixture.amount(null).build();
+    paymentRequest = requestFixture.amount(null).build();
     assertThat(paymentRequest.valid(), isOptionalOf("'amount' cannot be null"));
   }
 
   @Test
   void shouldFailValidatingIfAmountIsInvalid() {
-    PaymentRequest paymentRequest = requestFixture.amount(0).build();
+    paymentRequest = requestFixture.amount(0).build();
     String expected = "'amount' must be greater than or equal to 0.01";
     assertThat(paymentRequest.valid(), isOptionalOf(expected));
   }
 
   @Test
   void shouldFailValidatingIfCurrencyIsNull() {
-    PaymentRequest paymentRequest = requestFixture.currency(null).build();
+    paymentRequest = requestFixture.currency(null).build();
     assertThat(paymentRequest.valid(), isOptionalOf("'currency' cannot be null"));
   }
 
   @Test
   void shouldFailValidatingIfCurrencyIsInvalid() {
-    PaymentRequest paymentRequest = requestFixture.currency("LTL").build();
+    paymentRequest = requestFixture.currency("LTL").build();
     assertThat(paymentRequest.valid(), isOptionalOf("'currency' value 'LTL' is not valid"));
   }
 
   @Test
   void shouldFailValidatingIfDebtorIbanIsNull() {
-    PaymentRequest paymentRequest = requestFixture.debtorIban(null).build();
+    paymentRequest = requestFixture.debtorIban(null).build();
     assertThat(paymentRequest.valid(), isOptionalOf("'debtor_iban' cannot be null"));
   }
 
   @Test
   void shouldFailValidatingIfDebtorIbanIsTooLong() {
-    PaymentRequest paymentRequest = requestFixture.debtorIban("LT3456789012345678901").build();
+    paymentRequest = requestFixture.debtorIban("LT3456789012345678901").build();
     String expected = "'debtor_iban' length must be less than or equal to 20";
     assertThat(paymentRequest.valid(), isOptionalOf(expected));
   }
 
   @Test
   void shouldFailValidatingIfCreditorIbanIsNull() {
-    PaymentRequest paymentRequest = requestFixture.creditorIban(null).build();
+    paymentRequest = requestFixture.creditorIban(null).build();
     assertThat(paymentRequest.valid(), isOptionalOf("'creditor_iban' cannot be null"));
   }
 
   @Test
   void shouldFailValidatingIfCreditorIbanIsTooLong() {
-    PaymentRequest paymentRequest = requestFixture.creditorIban("LT3456789012345678901").build();
+    paymentRequest = requestFixture.creditorIban("LT3456789012345678901").build();
     String expected = "'creditor_iban' length must be less than or equal to 20";
     assertThat(paymentRequest.valid(), isOptionalOf(expected));
   }
 
   @Test
   void shouldFailValidatingIfBicCodeIsTooLong() {
-    PaymentRequest paymentRequest = requestFixture.bicCode("LT3456789012345678901").build();
+    paymentRequest = requestFixture.bicCode("LT3456789012345678901").build();
     String expected = "'bic_code' length must be less than or equal to 20";
     assertThat(paymentRequest.valid(), isOptionalOf(expected));
   }
 
   @Test
   void shouldFailValidatingIfDetailsIsTooLong() {
-    PaymentRequest paymentRequest = requestFixture.details("details details details details "
+    paymentRequest = requestFixture.details("details details details details "
         + "details details details details details details details details details details "
         + "details details details details details details details details details details "
         + "details details details details details details details details ").build();
@@ -117,5 +121,45 @@ class PaymentRequestTest {
     assertThat(paymentRequest.valid(), isOptionalOf(expected));
   }
 
+  @Test
+  void shouldFailValidatingType1PaymentIfDetailsIsNull() {
+    paymentRequest = requestFixture.type("TYPE1").details(null).build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'details' cannot be null for TYPE1 payment"));
+  }
 
+  @Test
+  void shouldFailValidatingType1PaymentIfCurencyIsNotEUR() {
+    paymentRequest = requestFixture.type("TYPE1").currency("USD").build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'currency' must be 'EUR' for TYPE1 payment"));
+  }
+
+  @Test
+  void shouldValidateType2PaymentRequestSuccessfully() {
+    paymentRequest = requestFixture.type("TYPE2").currency("USD").build();
+    assertThat(paymentRequest.valid(), isOptionalOf(null));
+  }
+
+  @Test
+  void shouldFailValidatingType2PaymentIfDetailsIsNull() {
+    paymentRequest = requestFixture.type("TYPE2").currency("USD").details(null).build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'details' cannot be null for TYPE2 payment"));
+  }
+
+  @Test
+  void shouldFailValidatingType2PaymentIfCurencyIsNotUSD() {
+    paymentRequest = requestFixture.type("TYPE2").currency("EUR").build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'currency' must be 'USD' for TYPE2 payment"));
+  }
+
+  @Test
+  void shouldValidateType3PaymentRequestSuccessfully() {
+    paymentRequest = requestFixture.type("TYPE3").build();
+    assertThat(paymentRequest.valid(), isOptionalOf(null));
+  }
+
+  @Test
+  void shouldFailValidatingType3PaymentIfBicCodeIsNull() {
+    paymentRequest = requestFixture.type("TYPE3").bicCode(null).build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'bic_code' cannot be null for TYPE3 payment"));
+  }
 }
