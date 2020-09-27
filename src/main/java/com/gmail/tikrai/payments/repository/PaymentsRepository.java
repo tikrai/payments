@@ -3,6 +3,7 @@ package com.gmail.tikrai.payments.repository;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +17,7 @@ public class PaymentsRepository {
 
   public static final String TABLE = "payments";
   private static final String ID = "id";
+  private static final String CREATED = "created";
   private static final String CANCELLED = "cancelled";
   private static final String TYPE = "type";
   private static final String AMOUNT = "amount";
@@ -29,6 +31,7 @@ public class PaymentsRepository {
 
   private static RowMapper<Payment> rowMapper = (rs, rowNum) -> new Payment(
       rs.getInt(ID),
+      rs.getTimestamp(CREATED).toInstant(),
       rs.getBoolean(CANCELLED),
       Payment.Type.valueOf(rs.getString(TYPE)),
       BigDecimal.valueOf(rs.getInt(AMOUNT), 2),
@@ -65,9 +68,10 @@ public class PaymentsRepository {
 
   public Payment create(Payment payment) {
     String sql = String.format(
-        "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s) "
-            + "VALUES ('%s', %s, '%s', '%s', '%s', %s, %s) RETURNING %s",
-        TABLE, TYPE, AMOUNT, CURRENCY, DEBTOR_IBAN, CREDITOR_IBAN, BIC_CODE, DETAILS,
+        "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) "
+            + "VALUES ('%s', '%s', %s, '%s', '%s', '%s', %s, %s) RETURNING %s",
+        TABLE, CREATED, TYPE, AMOUNT, CURRENCY, DEBTOR_IBAN, CREDITOR_IBAN, BIC_CODE, DETAILS,
+        new Timestamp(payment.created().toEpochMilli()),
         payment.type().toString(),
         payment.amount().unscaledValue(),
         payment.currency().toString(),

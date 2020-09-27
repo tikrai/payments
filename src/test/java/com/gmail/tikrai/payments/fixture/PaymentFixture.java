@@ -4,10 +4,12 @@ import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.domain.Payment.Currency;
 import com.gmail.tikrai.payments.domain.Payment.Type;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 public class PaymentFixture {
 
   private int id = 0;
+  private Instant created = Instant.now();
   private boolean cancelled = false;
   private Type type = Type.TYPE1;
   private BigDecimal amount = BigDecimal.valueOf(10.01);
@@ -21,6 +23,11 @@ public class PaymentFixture {
 
   public PaymentFixture id(int id) {
     this.id = id;
+    return this;
+  }
+
+  public PaymentFixture created(Instant created) {
+    this.created = created;
     return this;
   }
 
@@ -80,7 +87,7 @@ public class PaymentFixture {
   }
 
   public Payment build() {
-    return new Payment(id, cancelled, type, amount, currency, debtorIban, creditorIban, bicCode,
-        details, ipAddress, country);
+    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
+        bicCode, details, ipAddress, country);
   }
 }

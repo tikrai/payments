@@ -20,6 +20,7 @@ public class DbInitListener implements ApplicationListener<ContextRefreshedEvent
   public void onApplicationEvent(ContextRefreshedEvent event) {
     String sql = "CREATE TABLE IF NOT EXISTS payments("
         + "  id            SERIAL PRIMARY KEY,"
+        + "  created       TIMESTAMP NOT NULL,"
         + "  cancelled     BOOLEAN NOT NULL DEFAULT FALSE,"
         + "  type          CHAR(5) NOT NULL,"
         + "  amount        INTEGER NOT NULL,"

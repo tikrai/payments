@@ -28,7 +28,8 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
 
     response.then().statusCode(HttpStatus.CREATED.value());
     Payment actual = response.as(Payment.class);
-    assertThat(actual, equalTo(payment.toDomain().withId(actual.id())));
+    Payment expected = payment.toDomain().withId(actual.id()).withCreated(actual.created());
+    assertThat(actual, equalTo(expected));
     assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(actual)));
   }
 

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -71,10 +72,13 @@ class PaymentsRepositoryTest {
     Payment actual = paymentsRepository.create(payment);
 
     assertThat(actual, equalTo(payment.withId(1)));
-    String expectedQuery = "INSERT INTO "
-        + "payments (type, amount, currency, debtor_iban, creditor_iban, bic_code, details) "
-        + "VALUES ('TYPE1', 1001, 'EUR', 'LT0001', 'LT9999', 'AGBLLT2X', 'details') "
-        + "RETURNING id";
+    String expectedQuery = String.format(
+        "INSERT INTO payments "
+            + "(created, type, amount, currency, debtor_iban, creditor_iban, bic_code, details) "
+            + "VALUES "
+            + "('%s', 'TYPE1', 1001, 'EUR', 'LT0001', 'LT9999', 'AGBLLT2X', 'details') "
+            + "RETURNING id",
+        new Timestamp(payment.created().toEpochMilli()));
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
     verifyNoMoreInteractions(db);
   }

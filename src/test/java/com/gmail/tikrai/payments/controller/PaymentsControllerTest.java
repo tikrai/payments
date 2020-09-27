@@ -3,6 +3,7 @@ package com.gmail.tikrai.payments.controller;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -51,12 +52,13 @@ class PaymentsControllerTest {
 
   @Test
   void shouldCreateNewPayment() {
-    when(paymentsService.create(payment)).thenReturn(payment);
+    when(paymentsService.create(any(Payment.class))).thenReturn(payment);
 
     ResponseEntity<Payment> actual = paymentsController.create(paymentRequest);
 
-    assertThat(actual, equalTo(new ResponseEntity<>(payment, HttpStatus.CREATED)));
-    verify(paymentsService).create(payment);
+    Payment expected = this.payment.withCreated(actual.getBody().created());
+    assertThat(actual, equalTo(new ResponseEntity<>(expected, HttpStatus.CREATED)));
+    verify(paymentsService).create(any(Payment.class));
     verifyNoMoreInteractions(paymentsService);
   }
 

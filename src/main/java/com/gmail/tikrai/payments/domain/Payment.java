@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gmail.tikrai.payments.util.Generated;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -18,6 +19,7 @@ public class Payment {
   }
 
   private final int id;
+  private final Instant created;
   private final boolean cancelled;
   private final Type type;
   private final BigDecimal amount;
@@ -32,6 +34,7 @@ public class Payment {
   @JsonCreator
   public Payment(
       int id,
+      Instant created,
       boolean cancelled,
       Type type,
       BigDecimal amount,
@@ -44,6 +47,7 @@ public class Payment {
       String country
   ) {
     this.id = id;
+    this.created = created;
     this.cancelled = cancelled;
     this.type = type;
     this.amount = amount.setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -57,18 +61,28 @@ public class Payment {
   }
 
   public Payment withId(int id) {
-    return new Payment(id, cancelled, type, amount, currency, debtorIban, creditorIban,
+    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
+        bicCode, details, ipAddress, country);
+  }
+
+  public Payment withCreated(Instant created) {
+    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
         bicCode, details, ipAddress, country);
   }
 
   public Payment withCancelled(boolean cancelled) {
-    return new Payment(id, cancelled, type, amount, currency, debtorIban, creditorIban,
+    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
         bicCode, details, ipAddress, country);
   }
 
   @JsonProperty("id")
   public int id() {
     return id;
+  }
+
+  @JsonProperty("created")
+  public Instant created() {
+    return created;
   }
 
   @JsonProperty("cancelled")
@@ -133,6 +147,7 @@ public class Payment {
     Payment payment = (Payment) o;
     return id == payment.id
         && cancelled == payment.cancelled
+        && Objects.equals(created, payment.created)
         && type == payment.type
         && Objects.equals(amount, payment.amount)
         && currency == payment.currency
@@ -148,8 +163,8 @@ public class Payment {
   @Generated
   public int hashCode() {
     return Objects
-        .hash(id, cancelled, type, amount, currency, debtorIban, creditorIban, bicCode, details,
-            ipAddress, country);
+        .hash(id, created, cancelled, type, amount, currency, debtorIban, creditorIban, bicCode,
+            details, ipAddress, country);
   }
 
   @Override
@@ -157,6 +172,7 @@ public class Payment {
   public String toString() {
     return "Payment{" +
         "id=" + id +
+        ", created=" + created +
         ", cancelled=" + cancelled +
         ", type=" + type +
         ", amount=" + amount +
