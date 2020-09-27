@@ -42,15 +42,15 @@ class PaymentsServiceTest {
 
   @Test
   void shouldGetCancellingFeeById() {
-    Payment hourOldPayment = payment.withCreated(payment.created().minusSeconds(3601));
-    when(paymentsRepository.findById(hourOldPayment.id())).thenReturn(Optional.of(hourOldPayment));
+    Payment secOldPayment = payment.withCreated(payment.created().minusSeconds(1));
+    when(paymentsRepository.findById(secOldPayment.id())).thenReturn(Optional.of(secOldPayment));
 
-    PaymentCancelFeeResponse actual = paymentsService.getCancellingFee(hourOldPayment.id());
+    PaymentCancelFeeResponse actual = paymentsService.getCancellingFee(secOldPayment.id());
 
     PaymentCancelFeeResponse expected =
-        new PaymentCancelFeeResponse(0, true, BigDecimal.valueOf(5, 2));
+        new PaymentCancelFeeResponse(0, true, BigDecimal.valueOf(0, 2));
     assertThat(actual, equalTo(expected));
-    verify(paymentsRepository).findById(hourOldPayment.id());
+    verify(paymentsRepository).findById(secOldPayment.id());
     verifyNoMoreInteractions(paymentsRepository);
   }
 
