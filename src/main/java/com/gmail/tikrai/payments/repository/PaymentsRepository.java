@@ -2,47 +2,34 @@ package com.gmail.tikrai.payments.repository;
 
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
-import java.math.BigDecimal;
+import com.gmail.tikrai.payments.repository.rowmappers.PaymentsMapper;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PaymentsRepository {
 
   public static final String TABLE = "payments";
-  private static final String ID = "id";
-  private static final String CREATED = "created";
-  private static final String CANCELLED = "cancelled";
-  private static final String TYPE = "type";
-  private static final String AMOUNT = "amount";
-  private static final String CURRENCY = "currency";
-  private static final String DEBTOR_IBAN = "debtor_iban";
-  private static final String CREDITOR_IBAN = "creditor_iban";
-  private static final String BIC_CODE = "bic_code";
-  private static final String DETAILS = "details";
-  private static final String IP_ADDRESS = "ipAddress";
-  private static final String COUNTRY = "country";
+  public static final String ID = "id";
+  public static final String CREATED = "created";
+  public static final String CANCELLED = "cancelled";
+  public static final String CANCEL_FEE = "cancel_fee";
+  public static final String TYPE = "type";
+  public static final String AMOUNT = "amount";
+  public static final String CURRENCY = "currency";
+  public static final String DEBTOR_IBAN = "debtor_iban";
+  public static final String CREDITOR_IBAN = "creditor_iban";
+  public static final String BIC_CODE = "bic_code";
+  public static final String DETAILS = "details";
+  public static final String IP_ADDRESS = "ipAddress";
+  public static final String COUNTRY = "country";
 
-  private static RowMapper<Payment> rowMapper = (rs, rowNum) -> new Payment(
-      rs.getInt(ID),
-      rs.getTimestamp(CREATED).toInstant(),
-      rs.getBoolean(CANCELLED),
-      Payment.Type.valueOf(rs.getString(TYPE)),
-      BigDecimal.valueOf(rs.getInt(AMOUNT), 2),
-      Payment.Currency.valueOf(rs.getString(CURRENCY)),
-      rs.getString(DEBTOR_IBAN),
-      rs.getString(CREDITOR_IBAN),
-      rs.getString(BIC_CODE),
-      rs.getString(DETAILS),
-      rs.getString(IP_ADDRESS),
-      rs.getString(COUNTRY)
-  );
+  private static PaymentsMapper rowMapper = new PaymentsMapper();
 
   private final JdbcTemplate db;
 

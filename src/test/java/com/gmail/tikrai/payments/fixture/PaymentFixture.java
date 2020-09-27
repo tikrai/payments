@@ -11,6 +11,7 @@ public class PaymentFixture {
   private int id = 0;
   private Instant created = Instant.now();
   private boolean cancelled = false;
+  private BigDecimal cancelFee = null;
   private Type type = Type.TYPE1;
   private BigDecimal amount = BigDecimal.valueOf(10.01);
   private Currency currency = Currency.EUR;
@@ -33,6 +34,11 @@ public class PaymentFixture {
 
   public PaymentFixture cancelled(boolean cancelled) {
     this.cancelled = cancelled;
+    return this;
+  }
+
+  public PaymentFixture cancelFee(BigDecimal cancelFee) {
+    this.cancelFee = cancelFee;
     return this;
   }
 
@@ -87,7 +93,7 @@ public class PaymentFixture {
   }
 
   public Payment build() {
-    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
-        bicCode, details, ipAddress, country);
+    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
+        creditorIban, bicCode, details, ipAddress, country);
   }
 }

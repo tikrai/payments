@@ -29,6 +29,7 @@ public class Payment {
   private final int id;
   private final Instant created;
   private final boolean cancelled;
+  private final BigDecimal cancelFee;
   private final Type type;
   private final BigDecimal amount;
   private final Currency currency;
@@ -44,6 +45,7 @@ public class Payment {
       int id,
       Instant created,
       boolean cancelled,
+      BigDecimal cancelFee,
       Type type,
       BigDecimal amount,
       Currency currency,
@@ -57,6 +59,7 @@ public class Payment {
     this.id = id;
     this.created = created;
     this.cancelled = cancelled;
+    this.cancelFee = cancelFee;
     this.type = type;
     this.amount = amount.setScale(2, BigDecimal.ROUND_HALF_UP);
     this.currency = currency;
@@ -69,18 +72,18 @@ public class Payment {
   }
 
   public Payment withId(int id) {
-    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
-        bicCode, details, ipAddress, country);
+    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
+        creditorIban, bicCode, details, ipAddress, country);
   }
 
   public Payment withCreated(Instant created) {
-    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
-        bicCode, details, ipAddress, country);
+    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
+        creditorIban, bicCode, details, ipAddress, country);
   }
 
   public Payment withCancelled(boolean cancelled) {
-    return new Payment(id, created, cancelled, type, amount, currency, debtorIban, creditorIban,
-        bicCode, details, ipAddress, country);
+    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
+        creditorIban, bicCode, details, ipAddress, country);
   }
 
   @JsonProperty("id")
@@ -96,6 +99,11 @@ public class Payment {
   @JsonProperty("cancelled")
   public boolean cancelled() {
     return cancelled;
+  }
+
+  @JsonProperty("cancel_fee")
+  public BigDecimal cancelFee() {
+    return cancelFee;
   }
 
   @JsonProperty("type")
@@ -156,6 +164,7 @@ public class Payment {
     return id == payment.id
         && cancelled == payment.cancelled
         && Objects.equals(created, payment.created)
+        && Objects.equals(cancelFee, payment.cancelFee)
         && type == payment.type
         && Objects.equals(amount, payment.amount)
         && currency == payment.currency
@@ -171,26 +180,7 @@ public class Payment {
   @Generated
   public int hashCode() {
     return Objects
-        .hash(id, created, cancelled, type, amount, currency, debtorIban, creditorIban, bicCode,
-            details, ipAddress, country);
-  }
-
-  @Override
-  @Generated
-  public String toString() {
-    return "Payment{" +
-        "id=" + id +
-        ", created=" + created +
-        ", cancelled=" + cancelled +
-        ", type=" + type +
-        ", amount=" + amount +
-        ", currency=" + currency +
-        ", debtorIban='" + debtorIban + '\'' +
-        ", creditorIban='" + creditorIban + '\'' +
-        ", bicCode='" + bicCode + '\'' +
-        ", details='" + details + '\'' +
-        ", ipAddress='" + ipAddress + '\'' +
-        ", country='" + country + '\'' +
-        '}';
+        .hash(id, created, cancelled, cancelFee, type, amount, currency, debtorIban, creditorIban,
+            bicCode, details, ipAddress, country);
   }
 }

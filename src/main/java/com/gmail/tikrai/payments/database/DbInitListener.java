@@ -22,6 +22,7 @@ public class DbInitListener implements ApplicationListener<ContextRefreshedEvent
         + "  id            SERIAL PRIMARY KEY,"
         + "  created       TIMESTAMP NOT NULL,"
         + "  cancelled     BOOLEAN NOT NULL DEFAULT FALSE,"
+        + "  cancel_fee    INTEGER,"
         + "  type          CHAR(5) NOT NULL,"
         + "  amount        INTEGER NOT NULL,"
         + "  currency      CHAR(3) NOT NULL,"

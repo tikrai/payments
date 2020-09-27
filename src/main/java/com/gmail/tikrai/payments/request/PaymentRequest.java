@@ -48,6 +48,7 @@ public class PaymentRequest implements Validator {
         0,
         Instant.now(),
         false,
+        null,
         Payment.Type.valueOf(type),
         amount,
         Payment.Currency.valueOf(currency),
