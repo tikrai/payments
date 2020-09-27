@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
@@ -87,11 +88,11 @@ class PaymentsRepositoryTest {
   void shouldCancelPayment() {
     when(db.query(anyString(), any(RowMapper.class))).thenReturn(paymentList);
 
-    Payment actual = paymentsRepository.cancel(payment.id());
+    Payment actual = paymentsRepository.cancel(payment.id(), BigDecimal.ZERO);
 
     assertThat(actual, equalTo(payment));
-    String expectedQuery = String
-        .format("UPDATE payments SET (cancelled) = (true) WHERE id = %s", payment.id());
+    String expectedQuery = String.format(
+        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s", payment.id());
     verify(db).update(eq(expectedQuery));
     String expectedQuery2 = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
     verify(db).query(eq(expectedQuery2), any(RowMapper.class));
@@ -102,7 +103,7 @@ class PaymentsRepositoryTest {
   void shouldFailFindingPaymentAfterCancel() {
     String message = assertThrows(
         ResourceNotFoundException.class,
-        () -> paymentsRepository.cancel(payment.id())
+        () -> paymentsRepository.cancel(payment.id(), BigDecimal.ZERO)
     ).getMessage();
 
 
@@ -110,8 +111,8 @@ class PaymentsRepositoryTest {
         .format("Cancelled payment with id '%s' was not found", payment.id());
     assertThat(message, equalTo(expectedMessage));
 
-    String expectedQuery = String
-        .format("UPDATE payments SET (cancelled) = (true) WHERE id = %s", payment.id());
+    String expectedQuery = String.format(
+        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s", payment.id());
     verify(db).update(eq(expectedQuery));
     String expectedQuery2 = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
     verify(db).query(eq(expectedQuery2), any(RowMapper.class));

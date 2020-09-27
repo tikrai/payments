@@ -86,6 +86,11 @@ public class Payment {
         creditorIban, bicCode, details, ipAddress, country);
   }
 
+  public Payment withCancelFee(BigDecimal cancelFee) {
+    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
+        creditorIban, bicCode, details, ipAddress, country);
+  }
+
   @JsonProperty("id")
   public int id() {
     return id;
@@ -182,5 +187,25 @@ public class Payment {
     return Objects
         .hash(id, created, cancelled, cancelFee, type, amount, currency, debtorIban, creditorIban,
             bicCode, details, ipAddress, country);
+  }
+
+  @Override
+  @Generated
+  public String toString() {
+    return "Payment{" +
+        "id=" + id +
+        ", created=" + created +
+        ", cancelled=" + cancelled +
+        ", cancelFee=" + cancelFee +
+        ", type=" + type +
+        ", amount=" + amount +
+        ", currency=" + currency +
+        ", debtorIban='" + debtorIban + '\'' +
+        ", creditorIban='" + creditorIban + '\'' +
+        ", bicCode='" + bicCode + '\'' +
+        ", details='" + details + '\'' +
+        ", ipAddress='" + ipAddress + '\'' +
+        ", country='" + country + '\'' +
+        '}';
   }
 }

@@ -24,6 +24,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
   private final Payment payment = Fixture.payment().build();
   private final String getAllPaymentsPath = String.format("%s/%s", Endpoint.PAYMENTS, "all");
   private final String cancelFeePath = String.format("%s/%s", Endpoint.PAYMENTS, "cancel_fee");
+  private final BigDecimal zero = BigDecimal.valueOf(0, 2);
 
   @Test
   void shouldGetSinglePendingPayment() {
@@ -40,7 +41,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
   void shouldGetSinglePendingPaymentWhenAnotherIsCanceled() {
     Payment actualPayment = paymentsRepository.create(payment);
     Payment cancelledPayment = paymentsRepository.create(Fixture.payment().amount(5).build());
-    paymentsRepository.cancel(cancelledPayment.id());
+    paymentsRepository.cancel(cancelledPayment.id(), BigDecimal.ZERO);
 
     Response response = given().get(getAllPaymentsPath);
 
@@ -58,7 +59,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
 
     response.then().statusCode(HttpStatus.OK.value());
     PaymentCancelFeeResponse expected =
-        new PaymentCancelFeeResponse(actualPayment.id(), true, BigDecimal.valueOf(0, 2));
+        new PaymentCancelFeeResponse(actualPayment.id(), true, zero);
     assertThat(response.as(PaymentCancelFeeResponse.class), equalTo(expected));
   }
 
@@ -71,7 +72,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
 
     response.then().statusCode(HttpStatus.OK.value());
     Payment actualCancelled = response.as(Payment.class);
-    assertThat(actualCancelled, equalTo(payment.withId(actualCancelled.id()).withCancelled(true)));
+    Payment expected = payment.withId(actualCancelled.id()).withCancelled(true).withCancelFee(zero);
+    assertThat(actualCancelled, equalTo(expected));
     assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(actualCancelled)));
   }
 }

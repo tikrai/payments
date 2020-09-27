@@ -3,6 +3,7 @@ package com.gmail.tikrai.payments.repository;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
 import com.gmail.tikrai.payments.repository.rowmappers.PaymentsMapper;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
@@ -73,9 +74,10 @@ public class PaymentsRepository {
     return payment.withId(id);
   }
 
-  public Payment cancel(int id) {
+  public Payment cancel(int id, BigDecimal fee) {
     String sql = String.format(
-        "UPDATE %s SET (%s) = (true) WHERE %s = %s", TABLE, CANCELLED, ID, id
+        "UPDATE %s SET (%s, %s) = (true, %s) WHERE %s = %s",
+        TABLE, CANCELLED, CANCEL_FEE, fee.unscaledValue(), ID, id
     );
     db.update(sql);
     return findById(id).orElseThrow(() -> new ResourceNotFoundException(

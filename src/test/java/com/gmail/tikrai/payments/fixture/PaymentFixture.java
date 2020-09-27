@@ -42,6 +42,11 @@ public class PaymentFixture {
     return this;
   }
 
+  public PaymentFixture cancelFee(double cancelFee) {
+    this.cancelFee = BigDecimal.valueOf(cancelFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+    return this;
+  }
+
   public PaymentFixture type(Type type) {
     this.type = type;
     return this;
