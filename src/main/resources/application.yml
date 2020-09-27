@@ -15,6 +15,9 @@ management:
 server:
   port: 7777
 
+payments:
+  timezone: "Europe/Vilnius"
+
 ---
 spring:
   profiles: test

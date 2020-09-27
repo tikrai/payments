@@ -12,6 +12,8 @@ import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
+import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +21,8 @@ import org.junit.jupiter.api.Test;
 
 class PaymentsServiceTest {
   private final PaymentsRepository paymentsRepository = mock(PaymentsRepository.class);
-  private final PaymentsService paymentsService = new PaymentsService(paymentsRepository);
+  private final String timezone = "Europe/Vilnius";
+  private final PaymentsService paymentsService = new PaymentsService(paymentsRepository, timezone);
 
   private final Payment payment = Fixture.payment().build();
   private final List<Payment> paymentList = Collections.singletonList(payment);
@@ -37,23 +40,39 @@ class PaymentsServiceTest {
   }
 
   @Test
-  void shouldFindPaymentById() {
-    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
+  void shouldGetCancellingFeeById() {
+    Payment hourOldPayment = payment.withCreated(this.payment.created().minusSeconds(3601));
+    when(paymentsRepository.findById(hourOldPayment.id())).thenReturn(Optional.of(hourOldPayment));
 
-    Payment actual = paymentsService.findById(payment.id());
+    PaymentCancelFeeResponse actual = paymentsService.getCancellingFee(hourOldPayment.id());
 
-    assertThat(actual, equalTo(payment));
-    verify(paymentsRepository).findById(payment.id());
+    PaymentCancelFeeResponse expected =
+        new PaymentCancelFeeResponse(0, true, BigDecimal.valueOf(5, 2));
+    assertThat(actual, equalTo(expected));
+    verify(paymentsRepository).findById(hourOldPayment.id());
     verifyNoMoreInteractions(paymentsRepository);
   }
 
   @Test
-  void shouldFailToFindPaymentById() {
+  void shouldGetCancellingNotPossibleById() {
+    Payment oldPayment = this.payment.withCreated(this.payment.created().minusSeconds(3600 * 25));
+    when(paymentsRepository.findById(oldPayment.id())).thenReturn(Optional.of(oldPayment));
+
+    PaymentCancelFeeResponse actual = paymentsService.getCancellingFee(oldPayment.id());
+
+    PaymentCancelFeeResponse expected = new PaymentCancelFeeResponse(0, false, null);
+    assertThat(actual, equalTo(expected));
+    verify(paymentsRepository).findById(this.payment.id());
+    verifyNoMoreInteractions(paymentsRepository);
+  }
+
+  @Test
+  void shouldFailToGetCancellingFeeById() {
     when(paymentsRepository.findById(payment.id())).thenReturn(Optional.empty());
 
     String message = assertThrows(
         ResourceNotFoundException.class,
-        () -> paymentsService.findById(payment.id())
+        () -> paymentsService.getCancellingFee(payment.id())
     ).getMessage();
 
     String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());

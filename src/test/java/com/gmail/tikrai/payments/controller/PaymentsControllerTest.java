@@ -13,7 +13,9 @@ import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ValidationException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.request.PaymentRequest;
+import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -40,13 +42,16 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void shouldFindPaymentById() {
-    when(paymentsService.findById(payment.id())).thenReturn(payment);
+  void shouldFindPaymentCancellingFeeById() {
+    PaymentCancelFeeResponse paymentResponse =
+        new PaymentCancelFeeResponse(1, true, BigDecimal.ONE);
+    when(paymentsService.getCancellingFee(payment.id())).thenReturn(paymentResponse);
 
-    ResponseEntity<Payment> actual = paymentsController.findById(payment.id());
+    ResponseEntity<PaymentCancelFeeResponse> actual =
+        paymentsController.getCancellingFee(payment.id());
 
-    assertThat(actual, equalTo(new ResponseEntity<>(payment, HttpStatus.OK)));
-    verify(paymentsService).findById(payment.id());
+    assertThat(actual, equalTo(new ResponseEntity<>(paymentResponse, HttpStatus.OK)));
+    verify(paymentsService).getCancellingFee(payment.id());
     verifyNoMoreInteractions(paymentsService);
   }
 

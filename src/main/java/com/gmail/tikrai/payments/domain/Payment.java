@@ -11,7 +11,15 @@ import java.util.Optional;
 public class Payment {
 
   public enum Type {
-    TYPE1, TYPE2, TYPE3,
+    TYPE1(5),
+    TYPE2(10),
+    TYPE3(15);
+
+    public final int cancelCoeff;
+
+    Type(int cancelCoeff) {
+      this.cancelCoeff = cancelCoeff;
+    }
   }
 
   public enum Currency {

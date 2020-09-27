@@ -7,8 +7,10 @@ import com.gmail.tikrai.payments.IntegrationTestCase;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
+import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import com.jayway.restassured.response.Response;
+import java.math.BigDecimal;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
 
   private final Payment payment = Fixture.payment().build();
   private final String getAllPaymentsPath = String.format("%s/%s", Endpoint.PAYMENTS, "all");
-  private final String getPaymentPath = String.format("%s/%s", Endpoint.PAYMENTS, "get");
+  private final String cancelFeePath = String.format("%s/%s", Endpoint.PAYMENTS, "cancel_fee");
 
   @Test
   void shouldGetSinglePendingPayment() {
@@ -50,12 +52,14 @@ class PaymentsControllerIT extends IntegrationTestCase {
   @Test
   void shouldGetPaymentById() {
     Payment actualPayment = paymentsRepository.create(payment);
-    String path = String.format("%s/%s", getPaymentPath, actualPayment.id());
+    String path = String.format("%s/%s", cancelFeePath, actualPayment.id());
 
     Response response = given().get(path);
 
     response.then().statusCode(HttpStatus.OK.value());
-    assertThat(response.as(Payment.class), equalTo(actualPayment));
+    PaymentCancelFeeResponse expected =
+        new PaymentCancelFeeResponse(actualPayment.id(), true, BigDecimal.valueOf(0, 2));
+    assertThat(response.as(PaymentCancelFeeResponse.class), equalTo(expected));
   }
 
   @Test

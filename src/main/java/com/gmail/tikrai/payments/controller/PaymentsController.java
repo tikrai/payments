@@ -2,6 +2,7 @@ package com.gmail.tikrai.payments.controller;
 
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.request.PaymentRequest;
+import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import java.util.List;
@@ -31,11 +32,11 @@ public class PaymentsController {
     return new ResponseEntity<>(paymentsService.findAllPending(), HttpStatus.OK);
   }
 
-  @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Payment> findById(
+  @GetMapping(value = "/cancel_fee/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<PaymentCancelFeeResponse> getCancellingFee(
       @PathVariable Integer id
   ) {
-    return new ResponseEntity<>(paymentsService.findById(id), HttpStatus.OK);
+    return new ResponseEntity<>(paymentsService.getCancellingFee(id), HttpStatus.OK);
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
