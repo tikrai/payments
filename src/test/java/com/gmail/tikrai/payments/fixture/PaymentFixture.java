@@ -39,8 +39,8 @@ public class PaymentFixture {
     return this;
   }
 
-  public PaymentFixture amount(double price) {
-    this.amount = BigDecimal.valueOf(price).setScale(2, BigDecimal.ROUND_HALF_UP);
+  public PaymentFixture amount(double amount) {
+    this.amount = BigDecimal.valueOf(amount).setScale(2, BigDecimal.ROUND_HALF_UP);
     return this;
   }
 

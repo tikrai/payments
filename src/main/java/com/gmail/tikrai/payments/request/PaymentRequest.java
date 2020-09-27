@@ -96,17 +96,27 @@ public class PaymentRequest implements Validator {
   public Optional<String> valid() {
     return ValidatorGroup.of(
         ValidatorGroup.of(
-            NullValidator.not("type", type),
-            RegexValidator.of("type", type, "TYPE[123]")
+            () -> NullValidator.not("type", type).valid(),
+            () -> RegexValidator.of("type", type, "TYPE[123]").valid()
         ),
         ValidatorGroup.of(
-            NullValidator.not("amount", amount),
-            SizeValidator.min("amount", amount, BigDecimal.valueOf(0.01))
+            () -> NullValidator.not("amount", amount).valid(),
+            () -> SizeValidator.min("amount", amount, BigDecimal.valueOf(0.01)).valid()
         ),
         ValidatorGroup.of(
-            NullValidator.not("currency", currency),
-            RegexValidator.of("currency", currency, "EUR|USD")
-        )
+            () -> NullValidator.not("currency", currency).valid(),
+            () -> RegexValidator.of("currency", currency, "EUR|USD").valid()
+        ),
+        ValidatorGroup.of(
+            () -> NullValidator.not("debtor_iban", debtorIban).valid(),
+            () -> SizeValidator.max("debtor_iban", debtorIban, 20).valid()
+        ),
+        ValidatorGroup.of(
+            () -> NullValidator.not("creditor_iban", creditorIban).valid(),
+            () -> SizeValidator.max("creditor_iban", creditorIban, 20).valid()
+        ),
+        () -> SizeValidator.max("bic_code", bicCode, 20).valid(),
+        () -> SizeValidator.max("details", details, 255).valid()
     ).valid();
   }
 

@@ -25,6 +25,11 @@ public class PaymentRequestFixture {
     return this;
   }
 
+  public PaymentRequestFixture amount(double amount) {
+    this.amount = BigDecimal.valueOf(amount).setScale(2, BigDecimal.ROUND_HALF_UP);
+    return this;
+  }
+
   public PaymentRequestFixture currency(String currency) {
     this.currency = currency;
     return this;
