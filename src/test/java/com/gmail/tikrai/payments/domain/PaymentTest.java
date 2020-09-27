@@ -1,8 +1,7 @@
 package com.gmail.tikrai.payments.domain;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,12 +20,12 @@ class PaymentTest {
   @Test
   void shouldSerializePayment() throws JsonProcessingException {
     String serialized = mapper.writeValueAsString(payment);
-    assertThat(serialized, is(paymentJson));
+    assertThat(serialized, equalTo(paymentJson));
   }
 
   @Test
   void shouldDeserializePayment() throws JsonProcessingException {
     Payment deserialized = mapper.readValue(paymentJson, Payment.class);
-    assertThat(deserialized, is(payment));
+    assertThat(deserialized, equalTo(payment));
   }
 }

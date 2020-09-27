@@ -1,12 +1,19 @@
-package com.gmail.tikrai.payments.domain;
+package com.gmail.tikrai.payments.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.util.Generated;
+import com.gmail.tikrai.payments.validation.Validator;
+import com.gmail.tikrai.payments.validation.ValidatorGroup;
+import com.gmail.tikrai.payments.validation.validators.NullValidator;
+import com.gmail.tikrai.payments.validation.validators.RegexValidator;
+import com.gmail.tikrai.payments.validation.validators.SizeValidator;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 
-public class PaymentRequest {
+public class PaymentRequest implements Validator {
   private final String type;
   private final BigDecimal amount;
   private final String currency;
@@ -48,6 +55,59 @@ public class PaymentRequest {
         null,
         null
     );
+  }
+
+  @JsonProperty("type")
+  public String type() {
+    return type;
+  }
+
+  @JsonProperty("amount")
+  public BigDecimal amount() {
+    return amount;
+  }
+
+  @JsonProperty("currency")
+  public String currency() {
+    return currency;
+  }
+
+  @JsonProperty("debtor_iban")
+  public String debtorIban() {
+    return debtorIban;
+  }
+
+  @JsonProperty("creditor_iban")
+  public String creditorIban() {
+    return creditorIban;
+  }
+
+  @JsonProperty("bic_code")
+  public String bicCode() {
+    return bicCode;
+  }
+
+  @JsonProperty("details")
+  public String details() {
+    return details;
+  }
+
+  @Override
+  public Optional<String> valid() {
+    return ValidatorGroup.of(
+        ValidatorGroup.of(
+            NullValidator.not("type", type),
+            RegexValidator.of("type", type, "TYPE[123]")
+        ),
+        ValidatorGroup.of(
+            NullValidator.not("amount", amount),
+            SizeValidator.min("amount", amount, BigDecimal.valueOf(0.01))
+        ),
+        ValidatorGroup.of(
+            NullValidator.not("currency", currency),
+            RegexValidator.of("currency", currency, "EUR|USD")
+        )
+    ).valid();
   }
 
   @Override

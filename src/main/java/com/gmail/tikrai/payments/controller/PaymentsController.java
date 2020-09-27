@@ -1,7 +1,7 @@
 package com.gmail.tikrai.payments.controller;
 
 import com.gmail.tikrai.payments.domain.Payment;
-import com.gmail.tikrai.payments.domain.PaymentRequest;
+import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import java.util.List;
@@ -42,6 +42,7 @@ public class PaymentsController {
   public ResponseEntity<Payment> create(
       @RequestBody PaymentRequest request
   ) {
+    request.validate();
     return new ResponseEntity<>(paymentsService.create(request.toDomain()), HttpStatus.CREATED);
   }
 

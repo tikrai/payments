@@ -2,7 +2,7 @@ package com.gmail.tikrai.payments.fixture;
 
 import com.gmail.tikrai.payments.domain.Payment.Currency;
 import com.gmail.tikrai.payments.domain.Payment.Type;
-import com.gmail.tikrai.payments.domain.PaymentRequest;
+import com.gmail.tikrai.payments.request.PaymentRequest;
 import java.math.BigDecimal;
 
 public class PaymentRequestFixture {

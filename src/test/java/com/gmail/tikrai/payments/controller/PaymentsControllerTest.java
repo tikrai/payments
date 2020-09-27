@@ -9,8 +9,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.gmail.tikrai.payments.domain.Payment;
-import com.gmail.tikrai.payments.domain.PaymentRequest;
+import com.gmail.tikrai.payments.exception.ValidationException;
 import com.gmail.tikrai.payments.fixture.Fixture;
+import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +57,19 @@ class PaymentsControllerTest {
 
     assertThat(actual, equalTo(new ResponseEntity<>(payment, HttpStatus.CREATED)));
     verify(paymentsService).create(payment);
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFailToCreateNewPaymentIfRequestIsInvalid() {
+    PaymentRequest request = Fixture.paymentRequest().currency("EUR1").build();
+
+    String message = assertThrows(
+        ValidationException.class,
+        () -> paymentsController.create(request)
+    ).getMessage();
+
+    assertThat(message, equalTo("'currency' value 'EUR1' is not valid"));
     verifyNoMoreInteractions(paymentsService);
   }
 

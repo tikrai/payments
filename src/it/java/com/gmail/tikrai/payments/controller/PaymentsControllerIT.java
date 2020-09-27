@@ -59,16 +59,6 @@ class PaymentsControllerIT extends IntegrationTestCase {
   }
 
   @Test
-  void shouldCreatePayment() {
-    Response response = given().body(payment).post(Endpoint.PAYMENTS);
-
-    response.then().statusCode(HttpStatus.CREATED.value());
-    Payment actual = response.as(Payment.class);
-    assertThat(actual, equalTo(payment.withId(actual.id())));
-    assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(actual)));
-  }
-
-  @Test
   void shouldCancelPayment() {
     Payment actualPayment = paymentsRepository.create(payment);
 
