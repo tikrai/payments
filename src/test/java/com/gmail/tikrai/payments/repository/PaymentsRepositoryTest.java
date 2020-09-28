@@ -46,10 +46,24 @@ class PaymentsRepositoryTest {
   void shouldFindAllPendingPayments() {
     when(db.query(anyString(), any(RowMapper.class))).thenReturn(paymentList);
 
-    List<Payment> actual = paymentsRepository.findAllPending();
+    List<Payment> actual = paymentsRepository.findAllPending(null, null);
 
     assertThat(actual, equalTo(Collections.singletonList(payment)));
     String expectedQuery = "SELECT * FROM payments WHERE cancelled = false";
+    verify(db).query(eq(expectedQuery), any(RowMapper.class));
+    verifyNoMoreInteractions(db);
+  }
+
+  @Test
+  void shouldFindFilteredPendingPayments() {
+    when(db.query(anyString(), any(RowMapper.class))).thenReturn(paymentList);
+
+    List<Payment> actual = paymentsRepository
+        .findAllPending(BigDecimal.valueOf(0.01), BigDecimal.valueOf(2.09));
+
+    assertThat(actual, equalTo(Collections.singletonList(payment)));
+    String expectedQuery =
+        "SELECT * FROM payments WHERE cancelled = false AND amount >= 1 AND amount <= 209";
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
     verifyNoMoreInteractions(db);
   }

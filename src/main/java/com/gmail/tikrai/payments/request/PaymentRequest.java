@@ -6,6 +6,7 @@ import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.util.Generated;
 import com.gmail.tikrai.payments.validation.Validator;
 import com.gmail.tikrai.payments.validation.ValidatorGroup;
+import com.gmail.tikrai.payments.validation.validators.DecimalValidator;
 import com.gmail.tikrai.payments.validation.validators.NullValidator;
 import com.gmail.tikrai.payments.validation.validators.PaymentValidator;
 import com.gmail.tikrai.payments.validation.validators.RegexValidator;
@@ -105,7 +106,8 @@ public class PaymentRequest implements Validator {
         ),
         ValidatorGroup.of(
             () -> NullValidator.not("amount", amount).valid(),
-            () -> SizeValidator.min("amount", amount, BigDecimal.valueOf(0.01)).valid()
+            () -> SizeValidator.min("amount", amount, BigDecimal.valueOf(0.01)).valid(),
+            () -> DecimalValidator.maxDecimals("amount", amount, 2).valid()
         ),
         ValidatorGroup.of(
             () -> NullValidator.not("currency", currency).valid(),

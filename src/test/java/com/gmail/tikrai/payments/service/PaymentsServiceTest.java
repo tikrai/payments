@@ -31,12 +31,12 @@ class PaymentsServiceTest {
 
   @Test
   void shouldFindAllNonCancelledPayments() {
-    when(paymentsRepository.findAllPending()).thenReturn(paymentList);
+    when(paymentsRepository.findAllPending(null, null)).thenReturn(paymentList);
 
-    List<Payment> actual = paymentsService.findAllPending();
+    List<Payment> actual = paymentsService.findAllPending(null, null);
 
     assertThat(actual, equalTo(paymentList));
-    verify(paymentsRepository).findAllPending();
+    verify(paymentsRepository).findAllPending(null, null);
     verifyNoMoreInteractions(paymentsRepository);
   }
 

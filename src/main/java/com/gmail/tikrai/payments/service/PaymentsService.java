@@ -45,8 +45,8 @@ public class PaymentsService {
     return new PaymentCancelFeeResponse(payment.id(), true, euros);
   }
 
-  public List<Payment> findAllPending() {
-    return paymentsRepository.findAllPending();
+  public List<Payment> findAllPending(BigDecimal min, BigDecimal max) {
+    return paymentsRepository.findAllPending(min, max);
   }
 
   public PaymentCancelFeeResponse getCancellingFee(int id) {

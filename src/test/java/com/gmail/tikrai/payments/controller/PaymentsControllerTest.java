@@ -30,21 +30,104 @@ class PaymentsControllerTest {
   private final Payment payment = Fixture.payment().build();
   private final List<Payment> paymentList = Collections.singletonList(payment);
 
+  private final BigDecimal zero = BigDecimal.valueOf(0, 2);
+  private final BigDecimal one = BigDecimal.valueOf(1, 2);
+  private final BigDecimal invalid = BigDecimal.valueOf(0.151);
+
   @Test
   void shouldFindAllNonCancelledPayments() {
-    when(paymentsService.findAllPending()).thenReturn(paymentList);
+    when(paymentsService.findAllPending(null, null)).thenReturn(paymentList);
 
-    ResponseEntity<List<Payment>> actual = paymentsController.findAllPending();
+    ResponseEntity<List<Payment>> actual = paymentsController.findAllPending(null, null);
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentList, HttpStatus.OK)));
-    verify(paymentsService).findAllPending();
+    verify(paymentsService).findAllPending(null, null);
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFindFilteredNonCancelledPayments() {
+    when(paymentsService.findAllPending(zero, one)).thenReturn(paymentList);
+
+    ResponseEntity<List<Payment>> actual = paymentsController.findAllPending(zero, one);
+
+    assertThat(actual, equalTo(new ResponseEntity<>(paymentList, HttpStatus.OK)));
+    verify(paymentsService).findAllPending(zero, one);
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFindFilteredNonCancelledPaymentsIfRangeEndIsSameAsStart() {
+    when(paymentsService.findAllPending(one, one)).thenReturn(paymentList);
+
+    ResponseEntity<List<Payment>> actual = paymentsController.findAllPending(one, one);
+
+    assertThat(actual, equalTo(new ResponseEntity<>(paymentList, HttpStatus.OK)));
+    verify(paymentsService).findAllPending(one, one);
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFailToFindFilteredNonCancelledPaymentsIfRangeStartIsInvalid() {
+
+    String message = assertThrows(
+        ValidationException.class,
+        () -> paymentsController.findAllPending(invalid, null)
+    ).getMessage();
+
+    assertThat(message, equalTo("'min' value '0.151' must be rounded to 2 decimal digits"));
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFailToFindFilteredNonCancelledPaymentsIfRangeEndIsInvalid() {
+
+    String message = assertThrows(
+        ValidationException.class,
+        () -> paymentsController.findAllPending(null, invalid)
+    ).getMessage();
+
+    assertThat(message, equalTo("'max' value '0.151' must be rounded to 2 decimal digits"));
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFailToFindFilteredNonCancelledPaymentsIfMinIsNegative() {
+    String message = assertThrows(
+        ValidationException.class,
+        () -> paymentsController.findAllPending(BigDecimal.valueOf(-1.1), null)
+    ).getMessage();
+
+    assertThat(message, equalTo("'min' must be greater than or equal to 0"));
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFailToFindFilteredNonCancelledPaymentsIfMaxIsNegative() {
+    String message = assertThrows(
+        ValidationException.class,
+        () -> paymentsController.findAllPending(null, BigDecimal.valueOf(-1.1))
+    ).getMessage();
+
+    assertThat(message, equalTo("'max' must be greater than or equal to 0"));
+    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @Test
+  void shouldFailToFindFilteredNonCancelledPaymentsIfMinIsMoreThanMax() {
+    String message = assertThrows(
+        ValidationException.class,
+        () -> paymentsController.findAllPending(one, zero)
+    ).getMessage();
+
+    assertThat(message, equalTo("'max' must be greater than or equal than 'min'"));
     verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
   void shouldFindPaymentCancellingFeeById() {
     PaymentCancelFeeResponse paymentResponse =
-        new PaymentCancelFeeResponse(1, true, BigDecimal.ONE);
+        new PaymentCancelFeeResponse(1, true, one);
     when(paymentsService.getCancellingFee(payment.id())).thenReturn(paymentResponse);
 
     ResponseEntity<PaymentCancelFeeResponse> actual =

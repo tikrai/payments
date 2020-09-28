@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,8 +45,14 @@ public class PaymentsRepository {
     return db.query(sql, rowMapper);
   }
 
-  public List<Payment> findAllPending() {
+  public List<Payment> findAllPending(BigDecimal min, BigDecimal max) {
     String sql = String.format("SELECT * FROM %s WHERE %s = false", TABLE, CANCELLED);
+    if (min != null) {
+      sql = String.format("%s AND %s >= %d", sql, AMOUNT, min.unscaledValue());
+    }
+    if (max != null) {
+      sql = String.format("%s AND %s <= %d", sql, AMOUNT, max.unscaledValue());
+    }
     return db.query(sql, rowMapper);
   }
 
@@ -69,8 +76,8 @@ public class PaymentsRepository {
         payment.details().map(code -> String.format("'%s'", code)).orElse(null),
         ID
     );
-    List<Integer> query = db.query(sql, (rs, rowNum) -> rs.getInt(ID));
-    int id = query.stream().findFirst().orElse(0);
+    RowMapper<Integer> rowMapper = (rs, rowNum) -> rs.getInt(ID);
+    int id = db.query(sql, rowMapper).stream().findFirst().orElse(0);
     return payment.withId(id);
   }
 

@@ -38,6 +38,28 @@ class PaymentsControllerIT extends IntegrationTestCase {
   }
 
   @Test
+  void shouldGetSinglePendingPaymentFromRange() {
+    Payment actualPayment = paymentsRepository.create(payment);
+
+    Response response = given().get(getAllPaymentsPath + "?min=1&max=100");
+
+    response.then().statusCode(HttpStatus.OK.value());
+    Payment[] payments = {actualPayment};
+    assertThat(response.as(Payment[].class), equalTo(payments));
+  }
+
+  @Test
+  void shouldGetNoPendingPaymentFromRangeIfRangeIsWrong() {
+    paymentsRepository.create(payment);
+
+    Response response = given().get(getAllPaymentsPath + "?min=99&max=100");
+
+    response.then().statusCode(HttpStatus.OK.value());
+    Payment[] payments = {};
+    assertThat(response.as(Payment[].class), equalTo(payments));
+  }
+
+  @Test
   void shouldGetSinglePendingPaymentWhenAnotherIsCanceled() {
     Payment actualPayment = paymentsRepository.create(payment);
     Payment cancelledPayment = paymentsRepository.create(Fixture.payment().amount(5).build());

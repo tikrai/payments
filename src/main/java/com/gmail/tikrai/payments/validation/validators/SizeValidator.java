@@ -22,7 +22,7 @@ public class SizeValidator implements Validator {
       String field, T value, T min, String message
   ) {
     return new SizeValidator(
-        value != null && value.compareTo(min) < 0
+        value != null && min != null && value.compareTo(min) < 0
             ? String.format(message, field, min)
             : null);
   }

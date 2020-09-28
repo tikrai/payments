@@ -43,7 +43,7 @@ public class PaymentFixture {
   }
 
   public PaymentFixture cancelFee(double cancelFee) {
-    this.cancelFee = BigDecimal.valueOf(cancelFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+    this.cancelFee = BigDecimal.valueOf(cancelFee).setScale(2, BigDecimal.ROUND_UNNECESSARY);
     return this;
   }
 
@@ -58,7 +58,7 @@ public class PaymentFixture {
   }
 
   public PaymentFixture amount(double amount) {
-    this.amount = BigDecimal.valueOf(amount).setScale(2, BigDecimal.ROUND_HALF_UP);
+    this.amount = BigDecimal.valueOf(amount).setScale(2, BigDecimal.ROUND_UNNECESSARY);
     return this;
   }
 

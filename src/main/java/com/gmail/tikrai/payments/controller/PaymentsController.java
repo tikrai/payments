@@ -1,10 +1,15 @@
 package com.gmail.tikrai.payments.controller;
 
+import static java.math.BigDecimal.ROUND_UNNECESSARY;
+
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
+import com.gmail.tikrai.payments.validation.validators.DecimalValidator;
+import com.gmail.tikrai.payments.validation.validators.SizeValidator;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,8 +34,19 @@ public class PaymentsController {
   }
 
   @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Payment>> findAllPending() {
-    return new ResponseEntity<>(paymentsService.findAllPending(), HttpStatus.OK);
+  public ResponseEntity<List<Payment>> findAllPending(
+      @RequestParam(required = false) BigDecimal min,
+      @RequestParam(required = false) BigDecimal max
+  ) {
+    DecimalValidator.maxDecimals("min", min, 2).validate();
+    DecimalValidator.maxDecimals("max", max, 2).validate();
+    SizeValidator.min("min", min, BigDecimal.ZERO).validate();
+    SizeValidator.min("max", max, BigDecimal.ZERO).validate();
+    SizeValidator.min("max", max, min, "'max' must be greater than or equal than 'min'").validate();
+
+    min = min == null ? null : min.setScale(2, ROUND_UNNECESSARY);
+    max = max == null ? null : max.setScale(2, ROUND_UNNECESSARY);
+    return new ResponseEntity<>(paymentsService.findAllPending(min, max), HttpStatus.OK);
   }
 
   @GetMapping(value = "/cancel_fee/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -61,7 +61,7 @@ public class Payment {
     this.cancelled = cancelled;
     this.cancelFee = cancelFee;
     this.type = type;
-    this.amount = amount.setScale(2, BigDecimal.ROUND_HALF_UP);
+    this.amount = amount.setScale(2, BigDecimal.ROUND_UNNECESSARY);
     this.currency = currency;
     this.debtorIban = debtorIban;
     this.creditorIban = creditorIban;

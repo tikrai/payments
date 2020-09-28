@@ -12,6 +12,12 @@ class SizeValidatorTest {
   private Validator validator;
 
   @Test
+  void shoudValidateMinSizeAgainstNull() {
+    validator = SizeValidator.min("count", 6, null);
+    assertThat(validator.valid(), isOptionalOf(null));
+  }
+
+  @Test
   void shoudValidateMinSizeOfNull() {
     validator = SizeValidator.min("count", (Integer) null, 6);
     assertThat(validator.valid(), isOptionalOf(null));
