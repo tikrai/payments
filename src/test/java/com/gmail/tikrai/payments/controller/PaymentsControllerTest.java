@@ -28,7 +28,7 @@ class PaymentsControllerTest {
 
   private final PaymentRequest paymentRequest = Fixture.paymentRequest().build();
   private final Payment payment = Fixture.payment().build();
-  private final List<Payment> paymentList = Collections.singletonList(payment);
+  private final List<Integer> paymentIdList = Collections.singletonList(payment.id());
 
   private final BigDecimal zero = BigDecimal.valueOf(0, 2);
   private final BigDecimal one = BigDecimal.valueOf(1, 2);
@@ -36,33 +36,33 @@ class PaymentsControllerTest {
 
   @Test
   void shouldFindAllNonCancelledPayments() {
-    when(paymentsService.findAllPending(null, null)).thenReturn(paymentList);
+    when(paymentsService.findAllPending(null, null)).thenReturn(paymentIdList);
 
-    ResponseEntity<List<Payment>> actual = paymentsController.findAllPending(null, null);
+    ResponseEntity<List<Integer>> actual = paymentsController.findAllPending(null, null);
 
-    assertThat(actual, equalTo(new ResponseEntity<>(paymentList, HttpStatus.OK)));
+    assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(null, null);
     verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
   void shouldFindFilteredNonCancelledPayments() {
-    when(paymentsService.findAllPending(zero, one)).thenReturn(paymentList);
+    when(paymentsService.findAllPending(zero, one)).thenReturn(paymentIdList);
 
-    ResponseEntity<List<Payment>> actual = paymentsController.findAllPending(zero, one);
+    ResponseEntity<List<Integer>> actual = paymentsController.findAllPending(zero, one);
 
-    assertThat(actual, equalTo(new ResponseEntity<>(paymentList, HttpStatus.OK)));
+    assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(zero, one);
     verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
   void shouldFindFilteredNonCancelledPaymentsIfRangeEndIsSameAsStart() {
-    when(paymentsService.findAllPending(one, one)).thenReturn(paymentList);
+    when(paymentsService.findAllPending(one, one)).thenReturn(paymentIdList);
 
-    ResponseEntity<List<Payment>> actual = paymentsController.findAllPending(one, one);
+    ResponseEntity<List<Integer>> actual = paymentsController.findAllPending(one, one);
 
-    assertThat(actual, equalTo(new ResponseEntity<>(paymentList, HttpStatus.OK)));
+    assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(one, one);
     verifyNoMoreInteractions(paymentsService);
   }

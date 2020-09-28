@@ -34,7 +34,7 @@ public class PaymentsController {
   }
 
   @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Payment>> findAllPending(
+  public ResponseEntity<List<Integer>> findAllPending(
       @RequestParam(required = false) BigDecimal min,
       @RequestParam(required = false) BigDecimal max
   ) {

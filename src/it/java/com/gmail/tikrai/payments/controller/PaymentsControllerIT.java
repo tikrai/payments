@@ -33,8 +33,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath);
 
     response.then().statusCode(HttpStatus.OK.value());
-    Payment[] payments = {actualPayment};
-    assertThat(response.as(Payment[].class), equalTo(payments));
+    Integer[] payments = {actualPayment.id()};
+    assertThat(response.as(Integer[].class), equalTo(payments));
   }
 
   @Test
@@ -44,8 +44,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath + "?min=1&max=100");
 
     response.then().statusCode(HttpStatus.OK.value());
-    Payment[] payments = {actualPayment};
-    assertThat(response.as(Payment[].class), equalTo(payments));
+    Integer[] payments = {actualPayment.id()};
+    assertThat(response.as(Integer[].class), equalTo(payments));
   }
 
   @Test
@@ -55,8 +55,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath + "?min=99&max=100");
 
     response.then().statusCode(HttpStatus.OK.value());
-    Payment[] payments = {};
-    assertThat(response.as(Payment[].class), equalTo(payments));
+    Integer[] payments = {};
+    assertThat(response.as(Integer[].class), equalTo(payments));
   }
 
   @Test
@@ -68,8 +68,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath);
 
     response.then().statusCode(HttpStatus.OK.value());
-    Payment[] payments = {actualPayment};
-    assertThat(response.as(Payment[].class), equalTo(payments));
+    Integer[] payments = {actualPayment.id()};
+    assertThat(response.as(Integer[].class), equalTo(payments));
   }
 
   @Test

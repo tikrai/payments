@@ -26,16 +26,17 @@ class PaymentsServiceTest {
   private final PaymentsService paymentsService = new PaymentsService(paymentsRepository, timezone);
 
   private final Payment payment = Fixture.payment().build();
-  private final List<Payment> paymentList = Collections.singletonList(payment);
 
 
   @Test
   void shouldFindAllNonCancelledPayments() {
+    List<Payment> paymentList = Collections.singletonList(payment);
     when(paymentsRepository.findAllPending(null, null)).thenReturn(paymentList);
 
-    List<Payment> actual = paymentsService.findAllPending(null, null);
+    List<Integer> actual = paymentsService.findAllPending(null, null);
 
-    assertThat(actual, equalTo(paymentList));
+    List<Integer> expected = Collections.singletonList(payment.id());
+    assertThat(actual, equalTo(expected));
     verify(paymentsRepository).findAllPending(null, null);
     verifyNoMoreInteractions(paymentsRepository);
   }

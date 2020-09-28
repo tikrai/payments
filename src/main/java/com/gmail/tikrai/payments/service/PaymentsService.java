@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,8 +46,10 @@ public class PaymentsService {
     return new PaymentCancelFeeResponse(payment.id(), true, euros);
   }
 
-  public List<Payment> findAllPending(BigDecimal min, BigDecimal max) {
-    return paymentsRepository.findAllPending(min, max);
+  public List<Integer> findAllPending(BigDecimal min, BigDecimal max) {
+    return paymentsRepository.findAllPending(min, max).stream()
+        .map(Payment::id)
+        .collect(Collectors.toList());
   }
 
   public PaymentCancelFeeResponse getCancellingFee(int id) {
