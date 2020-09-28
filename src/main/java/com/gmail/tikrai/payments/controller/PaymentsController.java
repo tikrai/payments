@@ -11,6 +11,7 @@ import com.gmail.tikrai.payments.validation.validators.DecimalValidator;
 import com.gmail.tikrai.payments.validation.validators.SizeValidator;
 import java.math.BigDecimal;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -58,10 +59,12 @@ public class PaymentsController {
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Payment> create(
-      @RequestBody PaymentRequest request
+      @RequestBody PaymentRequest request,
+      HttpServletRequest http //todo test better
   ) {
     request.validate();
-    return new ResponseEntity<>(paymentsService.create(request.toDomain()), HttpStatus.CREATED);
+    Payment payment = request.toDomain(http.getRemoteAddr()); //todo solve null pointer
+    return new ResponseEntity<>(paymentsService.create(payment), HttpStatus.CREATED);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

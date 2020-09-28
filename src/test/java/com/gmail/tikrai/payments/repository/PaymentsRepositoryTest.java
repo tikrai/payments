@@ -89,11 +89,34 @@ class PaymentsRepositoryTest {
     assertThat(actual, equalTo(payment.withId(1)));
     String expectedQuery = String.format(
         "INSERT INTO payments "
-            + "(created, type, amount, currency, debtor_iban, creditor_iban, bic_code, details) "
+            + "(created, type, amount, currency, debtor_iban, creditor_iban, "
+            + "bic_code, details, ipaddress) "
             + "VALUES "
-            + "('%s', 'TYPE1', 1001, 'EUR', 'LT0001', 'LT9999', 'AGBLLT2X', 'details') "
+            + "('%s', 'TYPE1', 1001, 'EUR', 'LT0001', 'LT9999', "
+            + "'AGBLLT2X', 'details', '127.0.0.1') "
             + "RETURNING id",
         new Timestamp(payment.created().toEpochMilli()));
+    verify(db).query(eq(expectedQuery), any(RowMapper.class));
+    verifyNoMoreInteractions(db);
+  }
+
+  @Test
+  void shouldCreatePaymentWithoutIpAddress() {
+    Payment paymentNoIp = payment.withIpAddress(null);
+    when(db.query(anyString(), any(RowMapper.class))).thenReturn(Collections.singletonList(1));
+
+    Payment actual = paymentsRepository.create(paymentNoIp);
+
+    assertThat(actual, equalTo(paymentNoIp.withId(1)));
+    String expectedQuery = String.format(
+        "INSERT INTO payments "
+            + "(created, type, amount, currency, debtor_iban, creditor_iban, "
+            + "bic_code, details, ipaddress) "
+            + "VALUES "
+            + "('%s', 'TYPE1', 1001, 'EUR', 'LT0001', 'LT9999', "
+            + "'AGBLLT2X', 'details', null) "
+            + "RETURNING id",
+        new Timestamp(paymentNoIp.created().toEpochMilli()));
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
     verifyNoMoreInteractions(db);
   }

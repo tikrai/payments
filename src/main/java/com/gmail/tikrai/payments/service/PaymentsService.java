@@ -31,7 +31,7 @@ public class PaymentsService {
     this.timezone = timezone;
   }
 
-  private PaymentCancelFeeResponse cancelFee(Payment payment) {
+  private PaymentCancelFeeResponse cancelFee(Payment payment) { //todo test better
     LocalDate dateCreated = payment.created().atZone(ZoneId.of(timezone)).toLocalDate();
     LocalDate dateNow = Instant.now().atZone(ZoneId.of(timezone)).toLocalDate();
 

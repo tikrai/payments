@@ -18,12 +18,14 @@ import com.gmail.tikrai.payments.service.PaymentsService;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 class PaymentsControllerTest {
   private final PaymentsService paymentsService = mock(PaymentsService.class);
+  private final HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
   private final PaymentsController paymentsController = new PaymentsController(paymentsService);
 
   private final PaymentRequest paymentRequest = Fixture.paymentRequest().build();
@@ -142,7 +144,7 @@ class PaymentsControllerTest {
   void shouldCreateNewPayment() {
     when(paymentsService.create(any(Payment.class))).thenReturn(payment);
 
-    ResponseEntity<Payment> actual = paymentsController.create(paymentRequest);
+    ResponseEntity<Payment> actual = paymentsController.create(paymentRequest, httpServletRequest);
 
     Payment expected = this.payment.withCreated(actual.getBody().created());
     assertThat(actual, equalTo(new ResponseEntity<>(expected, HttpStatus.CREATED)));
@@ -156,7 +158,7 @@ class PaymentsControllerTest {
 
     String message = assertThrows(
         ValidationException.class,
-        () -> paymentsController.create(request)
+        () -> paymentsController.create(request, httpServletRequest)
     ).getMessage();
 
     assertThat(message, equalTo("'currency' value 'EUR1' is not valid"));

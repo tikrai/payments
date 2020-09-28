@@ -91,6 +91,11 @@ public class Payment {
         creditorIban, bicCode, details, ipAddress, country);
   }
 
+  public Payment withIpAddress(String ipAddress) {
+    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
+        creditorIban, bicCode, details, ipAddress, country);
+  }
+
   @JsonProperty("id")
   public int id() {
     return id;

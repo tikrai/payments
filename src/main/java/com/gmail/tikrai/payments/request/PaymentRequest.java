@@ -44,7 +44,7 @@ public class PaymentRequest implements Validator {
     this.details = details;
   }
 
-  public Payment toDomain() {
+  public Payment toDomain(String ipAddress) {
     return new Payment(
         0,
         Instant.now(),
@@ -57,7 +57,7 @@ public class PaymentRequest implements Validator {
         creditorIban,
         bicCode,
         details,
-        null,
+        ipAddress,
         null
     );
   }

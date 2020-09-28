@@ -28,7 +28,7 @@ public class PaymentsRepository {
   public static final String CREDITOR_IBAN = "creditor_iban";
   public static final String BIC_CODE = "bic_code";
   public static final String DETAILS = "details";
-  public static final String IP_ADDRESS = "ipAddress";
+  public static final String IP_ADDRESS = "ipaddress";
   public static final String COUNTRY = "country";
 
   private static PaymentsMapper rowMapper = new PaymentsMapper();
@@ -63,9 +63,10 @@ public class PaymentsRepository {
 
   public Payment create(Payment payment) {
     String sql = String.format(
-        "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) "
-            + "VALUES ('%s', '%s', %s, '%s', '%s', '%s', %s, %s) RETURNING %s",
-        TABLE, CREATED, TYPE, AMOUNT, CURRENCY, DEBTOR_IBAN, CREDITOR_IBAN, BIC_CODE, DETAILS,
+        "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s) "
+            + "VALUES ('%s', '%s', %s, '%s', '%s', '%s', %s, %s, %s) RETURNING %s",
+        TABLE,
+        CREATED, TYPE, AMOUNT, CURRENCY, DEBTOR_IBAN, CREDITOR_IBAN, BIC_CODE, DETAILS, IP_ADDRESS,
         new Timestamp(payment.created().toEpochMilli()),
         payment.type().toString(),
         payment.amount().unscaledValue(),
@@ -74,6 +75,7 @@ public class PaymentsRepository {
         payment.creditorIban(),
         payment.bicCode().map(code -> String.format("'%s'", code)).orElse(null),
         payment.details().map(code -> String.format("'%s'", code)).orElse(null),
+        payment.ipAddress().map(code -> String.format("'%s'", code)).orElse(null),
         ID
     );
     RowMapper<Integer> rowMapper = (rs, rowNum) -> rs.getInt(ID);
