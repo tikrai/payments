@@ -20,14 +20,17 @@ import org.springframework.stereotype.Service;
 public class PaymentsService {
 
   private final PaymentsRepository paymentsRepository;
+  private final IpResolveService ipResolveService;
   private final String timezone;
 
   @Autowired
   public PaymentsService(
       PaymentsRepository paymentsRepository,
+      IpResolveService ipResolveService,
       @Value("${payments.timezone}") String timezone
   ) {
     this.paymentsRepository = paymentsRepository;
+    this.ipResolveService = ipResolveService;
     this.timezone = timezone;
   }
 
@@ -61,7 +64,9 @@ public class PaymentsService {
   }
 
   public Payment create(Payment payment) {
-    return paymentsRepository.create(payment);
+    Payment created = paymentsRepository.create(payment);
+    ipResolveService.resolveIpAdress(created);
+    return created;
   }
 
   public Payment cancel(int id) {

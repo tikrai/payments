@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,7 +40,6 @@ class PaymentsRepositoryTest {
     assertThat(actual, equalTo(Collections.singletonList(payment)));
     String expectedQuery = "SELECT * FROM payments";
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
-    verifyNoMoreInteractions(db);
   }
 
   @Test
@@ -51,7 +51,6 @@ class PaymentsRepositoryTest {
     assertThat(actual, equalTo(Collections.singletonList(payment)));
     String expectedQuery = "SELECT * FROM payments WHERE cancelled = false";
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
-    verifyNoMoreInteractions(db);
   }
 
   @Test
@@ -65,7 +64,6 @@ class PaymentsRepositoryTest {
     String expectedQuery =
         "SELECT * FROM payments WHERE cancelled = false AND amount >= 1 AND amount <= 209";
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
-    verifyNoMoreInteractions(db);
   }
 
   @Test
@@ -77,7 +75,6 @@ class PaymentsRepositoryTest {
     assertThat(actual, equalTo(Optional.of(payment)));
     String expectedQuery = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
-    verifyNoMoreInteractions(db);
   }
 
   @Test
@@ -97,7 +94,6 @@ class PaymentsRepositoryTest {
             + "RETURNING id",
         new Timestamp(payment.created().toEpochMilli()));
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
-    verifyNoMoreInteractions(db);
   }
 
   @Test
@@ -118,7 +114,22 @@ class PaymentsRepositoryTest {
             + "RETURNING id",
         new Timestamp(paymentNoIp.created().toEpochMilli()));
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
-    verifyNoMoreInteractions(db);
+  }
+
+  @Test
+  void shouldLogCountry() {
+    int id = 1;
+    String country = "Paylandia";
+    paymentsRepository.logCountry(id, country);
+
+    String expectedQuery = String
+        .format("UPDATE payments SET (country) = ('%s') WHERE id = %s", country, id);
+    verify(db).update(eq(expectedQuery));
+  }
+
+  @Test
+  void shouldSkipLoggingCountryIfNull() {
+    paymentsRepository.logCountry(1, null);
   }
 
   @Test
@@ -133,7 +144,6 @@ class PaymentsRepositoryTest {
     verify(db).update(eq(expectedQuery));
     String expectedQuery2 = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
     verify(db).query(eq(expectedQuery2), any(RowMapper.class));
-    verifyNoMoreInteractions(db);
   }
 
   @Test
@@ -153,6 +163,10 @@ class PaymentsRepositoryTest {
     verify(db).update(eq(expectedQuery));
     String expectedQuery2 = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
     verify(db).query(eq(expectedQuery2), any(RowMapper.class));
+  }
+
+  @AfterEach
+  void verifyMocks() {
     verifyNoMoreInteractions(db);
   }
 }

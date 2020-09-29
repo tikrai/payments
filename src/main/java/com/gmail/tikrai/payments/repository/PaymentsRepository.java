@@ -83,6 +83,14 @@ public class PaymentsRepository {
     return payment.withId(id);
   }
 
+  public void logCountry(int id, String country) {
+    if (country != null) {
+      String sql = String
+          .format("UPDATE %s SET (%s) = ('%s') WHERE %s = %s", TABLE, COUNTRY, country, ID, id);
+      db.update(sql);
+    }
+  }
+
   public Payment cancel(int id, BigDecimal fee) {
     String sql = String.format(
         "UPDATE %s SET (%s, %s) = (true, %s) WHERE %s = %s",

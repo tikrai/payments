@@ -18,12 +18,15 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class PaymentsServiceTest {
   private final PaymentsRepository paymentsRepository = mock(PaymentsRepository.class);
+  private final IpResolveService ipResolveService = mock(IpResolveService.class);
   private final String timezone = "Europe/Vilnius";
-  private final PaymentsService paymentsService = new PaymentsService(paymentsRepository, timezone);
+  private final PaymentsService paymentsService =
+      new PaymentsService(paymentsRepository, ipResolveService, timezone);
 
   private final Payment payment = Fixture.payment().build();
 
@@ -38,7 +41,6 @@ class PaymentsServiceTest {
     List<Integer> expected = Collections.singletonList(payment.id());
     assertThat(actual, equalTo(expected));
     verify(paymentsRepository).findAllPending(null, null);
-    verifyNoMoreInteractions(paymentsRepository);
   }
 
   @Test
@@ -52,7 +54,6 @@ class PaymentsServiceTest {
         new PaymentCancelFeeResponse(0, true, BigDecimal.valueOf(0, 2));
     assertThat(actual, equalTo(expected));
     verify(paymentsRepository).findById(secOldPayment.id());
-    verifyNoMoreInteractions(paymentsRepository);
   }
 
   @Test
@@ -65,7 +66,6 @@ class PaymentsServiceTest {
     PaymentCancelFeeResponse expected = new PaymentCancelFeeResponse(0, false, null);
     assertThat(actual, equalTo(expected));
     verify(paymentsRepository).findById(payment.id());
-    verifyNoMoreInteractions(paymentsRepository);
   }
 
   @Test
@@ -80,7 +80,6 @@ class PaymentsServiceTest {
     String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());
     assertThat(message, equalTo(expectedMessage));
     verify(paymentsRepository).findById(payment.id());
-    verifyNoMoreInteractions(paymentsRepository);
   }
 
   @Test
@@ -91,7 +90,7 @@ class PaymentsServiceTest {
 
     assertThat(actual, equalTo(payment));
     verify(paymentsRepository).create(payment);
-    verifyNoMoreInteractions(paymentsRepository);
+    verify(ipResolveService).resolveIpAdress(payment);
   }
 
   @Test
@@ -107,7 +106,6 @@ class PaymentsServiceTest {
     assertThat(actual, equalTo(cancelled));
     verify(paymentsRepository).cancel(payment.id(), zero);
     verify(paymentsRepository).findById(payment.id());
-    verifyNoMoreInteractions(paymentsRepository);
   }
 
   @Test
@@ -122,7 +120,6 @@ class PaymentsServiceTest {
     String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());
     assertThat(message, equalTo(expectedMessage));
     verify(paymentsRepository).findById(payment.id());
-    verifyNoMoreInteractions(paymentsRepository);
   }
 
   @Test
@@ -139,6 +136,10 @@ class PaymentsServiceTest {
     String expectedMessage = String.format("Not possible to cancel payment '%s'", payment.id());
     assertThat(message, equalTo(expectedMessage));
     verify(paymentsRepository).findById(payment.id());
-    verifyNoMoreInteractions(paymentsRepository);
+  }
+
+  @AfterEach
+  void verifyMocks() {
+    verifyNoMoreInteractions(paymentsRepository, ipResolveService);
   }
 }

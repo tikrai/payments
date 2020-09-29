@@ -16,13 +16,13 @@ class PaymentCancelFeeResponseTest {
       new PaymentCancelFeeResponse(1, true, BigDecimal.ONE);
 
   @Test
-  void shouldSerializePaymentRequest() throws JsonProcessingException {
+  void shouldSerializePaymentCancelFeeResponse() throws JsonProcessingException {
     String serialized = mapper.writeValueAsString(response);
     assertThat(serialized, equalTo(responseJson));
   }
 
   @Test
-  void shouldDeserializePaymentRequest() throws JsonProcessingException {
+  void shouldDeserializePaymentCancelFeeResponse() throws JsonProcessingException {
     PaymentCancelFeeResponse deserialized =
         mapper.readValue(responseJson, PaymentCancelFeeResponse.class);
     assertThat(deserialized, equalTo(response));
