@@ -63,7 +63,7 @@ public class PaymentsController {
       HttpServletRequest http //todo test better
   ) {
     request.validate();
-    Payment payment = request.toDomain(http.getRemoteAddr()); //todo solve null pointer
+    Payment payment = request.toDomain(http.getRemoteAddr());
     return new ResponseEntity<>(paymentsService.create(payment), HttpStatus.CREATED);
   }
 

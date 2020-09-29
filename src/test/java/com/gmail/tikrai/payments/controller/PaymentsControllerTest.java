@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,6 @@ class PaymentsControllerTest {
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(null, null);
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -55,7 +55,6 @@ class PaymentsControllerTest {
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(zero, one);
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -66,7 +65,6 @@ class PaymentsControllerTest {
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(one, one);
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -78,7 +76,6 @@ class PaymentsControllerTest {
     ).getMessage();
 
     assertThat(message, equalTo("'min' value '0.151' must be rounded to 2 decimal digits"));
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -90,7 +87,6 @@ class PaymentsControllerTest {
     ).getMessage();
 
     assertThat(message, equalTo("'max' value '0.151' must be rounded to 2 decimal digits"));
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -101,7 +97,6 @@ class PaymentsControllerTest {
     ).getMessage();
 
     assertThat(message, equalTo("'min' must be greater than or equal to 0"));
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -112,7 +107,6 @@ class PaymentsControllerTest {
     ).getMessage();
 
     assertThat(message, equalTo("'max' must be greater than or equal to 0"));
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -123,7 +117,6 @@ class PaymentsControllerTest {
     ).getMessage();
 
     assertThat(message, equalTo("'max' must be greater than or equal than 'min'"));
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -137,7 +130,6 @@ class PaymentsControllerTest {
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentResponse, HttpStatus.OK)));
     verify(paymentsService).getCancellingFee(payment.id());
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -146,10 +138,10 @@ class PaymentsControllerTest {
 
     ResponseEntity<Payment> actual = paymentsController.create(paymentRequest, httpServletRequest);
 
-    Payment expected = this.payment.withCreated(actual.getBody().created());
+    Payment expected = payment.withCreated(actual.getBody().created());
     assertThat(actual, equalTo(new ResponseEntity<>(expected, HttpStatus.CREATED)));
     verify(paymentsService).create(any(Payment.class));
-    verifyNoMoreInteractions(paymentsService);
+    verify(httpServletRequest).getRemoteAddr();
   }
 
   @Test
@@ -162,7 +154,6 @@ class PaymentsControllerTest {
     ).getMessage();
 
     assertThat(message, equalTo("'currency' value 'EUR1' is not valid"));
-    verifyNoMoreInteractions(paymentsService);
   }
 
   @Test
@@ -174,6 +165,10 @@ class PaymentsControllerTest {
 
     assertThat(actual, equalTo(new ResponseEntity<>(cancelled, HttpStatus.OK)));
     verify(paymentsService).cancel(payment.id());
-    verifyNoMoreInteractions(paymentsService);
+  }
+
+  @AfterEach
+  void verifyMocks() {
+    verifyNoMoreInteractions(paymentsService, httpServletRequest);
   }
 }
