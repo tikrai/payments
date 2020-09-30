@@ -12,7 +12,6 @@ import com.gmail.tikrai.payments.validation.validators.PaymentValidator;
 import com.gmail.tikrai.payments.validation.validators.RegexValidator;
 import com.gmail.tikrai.payments.validation.validators.SizeValidator;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -47,7 +46,7 @@ public class PaymentRequest implements Validator {
   public Payment toDomain(String ipAddress) {
     return new Payment(
         0,
-        Instant.now(),
+        null,
         false,
         null,
         Payment.Type.valueOf(type),

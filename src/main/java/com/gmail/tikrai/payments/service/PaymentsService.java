@@ -21,28 +21,32 @@ public class PaymentsService {
 
   private final PaymentsRepository paymentsRepository;
   private final IpResolveService ipResolveService;
+  private final TimeService timeService;
   private final String timezone;
 
   @Autowired
   public PaymentsService(
       PaymentsRepository paymentsRepository,
       IpResolveService ipResolveService,
+      TimeService timeService,
       @Value("${payments.timezone}") String timezone
   ) {
     this.paymentsRepository = paymentsRepository;
     this.ipResolveService = ipResolveService;
+    this.timeService = timeService;
     this.timezone = timezone;
   }
 
-  private PaymentCancelFeeResponse cancelFee(Payment payment) { //todo test better
+  private PaymentCancelFeeResponse cancelFee(Payment payment) {
+    Instant now = timeService.now();
     LocalDate dateCreated = payment.created().atZone(ZoneId.of(timezone)).toLocalDate();
-    LocalDate dateNow = Instant.now().atZone(ZoneId.of(timezone)).toLocalDate();
+    LocalDate dateNow = now.atZone(ZoneId.of(timezone)).toLocalDate();
 
     if (!dateNow.equals(dateCreated)) {
       return new PaymentCancelFeeResponse(payment.id(), false, null);
     }
 
-    long hours = Duration.between(payment.created(), Instant.now()).toHours();
+    long hours = Duration.between(payment.created(), now).toHours();
     long cents = hours * payment.type().cancelCoeff;
     BigDecimal euros = BigDecimal.valueOf(cents, 2);
 
@@ -64,7 +68,7 @@ public class PaymentsService {
   }
 
   public Payment create(Payment payment) {
-    Payment created = paymentsRepository.create(payment);
+    Payment created = paymentsRepository.create(payment.withCreated(timeService.now()));
     ipResolveService.resolveIpAdress(created);
     return created;
   }
