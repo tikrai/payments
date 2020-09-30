@@ -2,7 +2,7 @@ package com.gmail.tikrai.payments.service;
 
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ConflictException;
-import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
+import com.gmail.tikrai.payments.exception.PaymentNotFoundException;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import java.math.BigDecimal;
@@ -61,9 +61,7 @@ public class PaymentsService {
 
   public PaymentCancelFeeResponse getCancellingFee(int id) {
     Payment payment = paymentsRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            String.format("Payment with id '%s' was not found", id)
-        ));
+        .orElseThrow(() -> new PaymentNotFoundException(id));
     return cancelFee(payment);
   }
 
@@ -74,16 +72,15 @@ public class PaymentsService {
   }
 
   public Payment cancel(int id) {
-    Payment payment = paymentsRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            String.format("Payment with id '%s' was not found", id)
-        ));
+    PaymentNotFoundException notFound = new PaymentNotFoundException(id);
+
+    Payment payment = paymentsRepository.findById(id).orElseThrow(() -> notFound);
     PaymentCancelFeeResponse fee = cancelFee(payment);
 
     if (!fee.cancelPossible()) {
       throw new ConflictException(String.format("Not possible to cancel payment '%s'", id));
     }
 
-    return paymentsRepository.cancel(id, fee.price());
+    return paymentsRepository.cancel(id, fee.price()).orElseThrow(() -> notFound);
   }
 }

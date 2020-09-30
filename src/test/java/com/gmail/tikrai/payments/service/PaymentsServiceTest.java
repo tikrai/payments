@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.domain.Payment.Type;
 import com.gmail.tikrai.payments.exception.ConflictException;
-import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
+import com.gmail.tikrai.payments.exception.PaymentNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
@@ -103,7 +103,7 @@ class PaymentsServiceTest {
     when(paymentsRepository.findById(payment.id())).thenReturn(Optional.empty());
 
     String message = assertThrows(
-        ResourceNotFoundException.class,
+        PaymentNotFoundException.class,
         () -> paymentsService.getCancellingFee(payment.id())
     ).getMessage();
 
@@ -133,7 +133,7 @@ class PaymentsServiceTest {
     when(paymentsRepository.findById(payment.id()))
         .thenReturn(Optional.of(payment.withCancelFee(zero)));
     when(timeService.now()).thenReturn(now);
-    when(paymentsRepository.cancel(payment.id(), zero)).thenReturn(cancelled);
+    when(paymentsRepository.cancel(payment.id(), zero)).thenReturn(Optional.of(cancelled));
 
     Payment actual = paymentsService.cancel(payment.id());
 
@@ -148,13 +148,34 @@ class PaymentsServiceTest {
     when(paymentsRepository.findById(payment.id())).thenReturn(Optional.empty());
 
     String message = assertThrows(
-        ResourceNotFoundException.class,
+        PaymentNotFoundException.class,
         () -> paymentsService.cancel(payment.id())
     ).getMessage();
 
     String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());
     assertThat(message, equalTo(expectedMessage));
     verify(paymentsRepository).findById(payment.id());
+  }
+
+  @Test
+  void shouldFailToCancelPaymentIfAfterCalculationDoNotExistAnymore() {
+    BigDecimal zero = BigDecimal.valueOf(0, 2);
+    when(paymentsRepository.findById(payment.id()))
+        .thenReturn(Optional.of(payment));
+    when(timeService.now()).thenReturn(now);
+    when(paymentsRepository.cancel(payment.id(), zero))
+        .thenReturn(Optional.empty());
+
+    String message = assertThrows(
+        PaymentNotFoundException.class,
+        () -> paymentsService.cancel(payment.id())
+    ).getMessage();
+
+    String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());
+    assertThat(message, equalTo(expectedMessage));
+    verify(paymentsRepository).findById(payment.id());
+    verify(timeService).now();
+    verify(paymentsRepository).cancel(payment.id(), zero);
   }
 
   @Test

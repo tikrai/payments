@@ -2,7 +2,6 @@ package com.gmail.tikrai.payments.repository;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -12,7 +11,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.gmail.tikrai.payments.domain.Payment;
-import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -118,12 +116,11 @@ class PaymentsRepositoryTest {
 
   @Test
   void shouldLogCountry() {
-    int id = 1;
     String country = "Paylandia";
-    paymentsRepository.logCountry(id, country);
+    paymentsRepository.logCountry(payment.id(), country);
 
     String expectedQuery = String
-        .format("UPDATE payments SET (country) = ('%s') WHERE id = %s", country, id);
+        .format("UPDATE payments SET (country) = ('%s') WHERE id = %s", country, payment.id());
     verify(db).update(eq(expectedQuery));
   }
 
@@ -136,33 +133,28 @@ class PaymentsRepositoryTest {
   void shouldCancelPayment() {
     when(db.query(anyString(), any(RowMapper.class))).thenReturn(paymentList);
 
-    Payment actual = paymentsRepository.cancel(payment.id(), BigDecimal.ZERO);
+    Optional<Payment> actual = paymentsRepository.cancel(payment.id(), BigDecimal.ZERO);
 
-    assertThat(actual, equalTo(payment));
+    assertThat(actual, equalTo(Optional.of(payment)));
     String expectedQuery = String.format(
-        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s", payment.id());
-    verify(db).update(eq(expectedQuery));
-    String expectedQuery2 = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
-    verify(db).query(eq(expectedQuery2), any(RowMapper.class));
+        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s RETURNING *",
+        payment.id()
+    );
+    verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }
 
   @Test
-  void shouldFailFindingPaymentAfterCancel() {
-    String message = assertThrows(
-        ResourceNotFoundException.class,
-        () -> paymentsRepository.cancel(payment.id(), BigDecimal.ZERO)
-    ).getMessage();
+  void shouldFailtoCancelPaymentIfNotExists() {
+    when(db.query(anyString(), any(RowMapper.class))).thenReturn(Collections.emptyList());
 
+    Optional<Payment> actual = paymentsRepository.cancel(payment.id(), BigDecimal.ZERO);
 
-    String expectedMessage = String
-        .format("Cancelled payment with id '%s' was not found", payment.id());
-    assertThat(message, equalTo(expectedMessage));
-
+    assertThat(actual, equalTo(Optional.empty()));
     String expectedQuery = String.format(
-        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s", payment.id());
-    verify(db).update(eq(expectedQuery));
-    String expectedQuery2 = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
-    verify(db).query(eq(expectedQuery2), any(RowMapper.class));
+        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s RETURNING *",
+        payment.id()
+    );
+    verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }
 
   @AfterEach
