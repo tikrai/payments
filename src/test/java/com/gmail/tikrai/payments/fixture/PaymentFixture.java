@@ -97,6 +97,23 @@ public class PaymentFixture {
     return this;
   }
 
+  public PaymentFixture of(Payment payment) {
+    this.id = payment.id();
+    this.created = payment.created();
+    this.cancelled = payment.cancelled();
+    this.cancelFee = payment.cancelFee();
+    this.type = payment.type();
+    this.amount = payment.amount();
+    this.currency = payment.currency();
+    this.debtorIban = payment.debtorIban();
+    this.creditorIban = payment.creditorIban();
+    this.bicCode = payment.bicCode().orElse(null);
+    this.details = payment.details().orElse(null);
+    this.ipAddress = payment.ipAddress().orElse(null);
+    this.country = payment.country().orElse(null);
+    return this;
+  }
+
   public Payment build() {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
         creditorIban, bicCode, details, ipAddress, country);

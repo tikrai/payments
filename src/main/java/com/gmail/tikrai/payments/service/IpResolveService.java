@@ -11,7 +11,6 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class IpResolveService {
-  //todo add integration test cases with mocked API
 
   private final RestTemplate restTemplate;
   private final PaymentsRepository paymentsRepository;

@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestTemplate;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -21,10 +23,16 @@ public class IntegrationTestCase {
   @Autowired
   private JdbcOperations db;
 
+  @Autowired
+  public RestTemplate restTemplate;
+
+  protected MockRestServiceServer mockServer;
+
   @BeforeEach
   public void setup() {
     RestAssured.port = port;
     flushTables(PaymentsRepository.TABLE);
+    mockServer = MockRestServiceServer.createServer(restTemplate);
   }
 
   private void flushTables(String... tables) {
