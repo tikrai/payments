@@ -4,6 +4,7 @@ import static java.math.BigDecimal.ROUND_UNNECESSARY;
 
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.request.PaymentRequest;
+import com.gmail.tikrai.payments.response.IdResponse;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
@@ -35,7 +36,7 @@ public class PaymentsController {
   }
 
   @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Integer>> findAllPending(
+  public ResponseEntity<List<IdResponse>> findAllPending(
       @RequestParam(required = false) BigDecimal min,
       @RequestParam(required = false) BigDecimal max
   ) {

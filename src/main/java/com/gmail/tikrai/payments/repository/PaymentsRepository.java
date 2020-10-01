@@ -1,6 +1,7 @@
 package com.gmail.tikrai.payments.repository;
 
 import com.gmail.tikrai.payments.domain.Payment;
+import com.gmail.tikrai.payments.repository.rowmappers.IdMapper;
 import com.gmail.tikrai.payments.repository.rowmappers.PaymentsMapper;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -9,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,6 +31,7 @@ public class PaymentsRepository {
   public static final String COUNTRY = "country";
 
   private static PaymentsMapper rowMapper = new PaymentsMapper();
+  private static IdMapper idMapper = new IdMapper();
 
   private final JdbcTemplate db;
 
@@ -77,8 +78,7 @@ public class PaymentsRepository {
         payment.ipAddress().map(code -> String.format("'%s'", code)).orElse(null),
         ID
     );
-    RowMapper<Integer> rowMapper = (rs, rowNum) -> rs.getInt(ID);
-    int id = db.query(sql, rowMapper).stream().findFirst().orElse(0);
+    int id = db.query(sql, idMapper).stream().findFirst().orElse(0);
     return payment.withId(id);
   }
 

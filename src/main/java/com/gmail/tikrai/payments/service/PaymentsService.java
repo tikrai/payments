@@ -4,6 +4,7 @@ import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ConflictException;
 import com.gmail.tikrai.payments.exception.PaymentNotFoundException;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
+import com.gmail.tikrai.payments.response.IdResponse;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -53,9 +54,10 @@ public class PaymentsService {
     return new PaymentCancelFeeResponse(payment.id(), true, euros);
   }
 
-  public List<Integer> findAllPending(BigDecimal min, BigDecimal max) {
+  public List<IdResponse> findAllPending(BigDecimal min, BigDecimal max) {
     return paymentsRepository.findAllPending(min, max).stream()
         .map(Payment::id)
+        .map(IdResponse::new)
         .collect(Collectors.toList());
   }
 

@@ -7,6 +7,7 @@ import com.gmail.tikrai.payments.IntegrationTestCase;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
+import com.gmail.tikrai.payments.response.IdResponse;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import com.jayway.restassured.response.Response;
@@ -33,8 +34,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath);
 
     response.then().statusCode(HttpStatus.OK.value());
-    Integer[] payments = {actualPayment.id()};
-    assertThat(response.as(Integer[].class), equalTo(payments));
+    IdResponse[] payments = {new IdResponse(actualPayment.id())};
+    assertThat(response.as(IdResponse[].class), equalTo(payments));
   }
 
   @Test
@@ -44,8 +45,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath + "?min=1&max=100");
 
     response.then().statusCode(HttpStatus.OK.value());
-    Integer[] payments = {actualPayment.id()};
-    assertThat(response.as(Integer[].class), equalTo(payments));
+    IdResponse[] payments = {new IdResponse(actualPayment.id())};
+    assertThat(response.as(IdResponse[].class), equalTo(payments));
   }
 
   @Test
@@ -55,8 +56,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath + "?min=99&max=100");
 
     response.then().statusCode(HttpStatus.OK.value());
-    Integer[] payments = {};
-    assertThat(response.as(Integer[].class), equalTo(payments));
+    IdResponse[] payments = {};
+    assertThat(response.as(IdResponse[].class), equalTo(payments));
   }
 
   @Test
@@ -68,8 +69,8 @@ class PaymentsControllerIT extends IntegrationTestCase {
     Response response = given().get(getAllPaymentsPath);
 
     response.then().statusCode(HttpStatus.OK.value());
-    Integer[] payments = {actualPayment.id()};
-    assertThat(response.as(Integer[].class), equalTo(payments));
+    IdResponse[] payments = {new IdResponse(actualPayment.id())};
+    assertThat(response.as(IdResponse[].class), equalTo(payments));
   }
 
   @Test

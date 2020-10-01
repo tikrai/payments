@@ -14,6 +14,7 @@ import com.gmail.tikrai.payments.exception.ConflictException;
 import com.gmail.tikrai.payments.exception.PaymentNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
+import com.gmail.tikrai.payments.response.IdResponse;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -35,6 +36,7 @@ class PaymentsServiceTest {
   private final Payment payment = Fixture.payment().build();
   private final Instant now = Instant.now();
   private final Instant creatTime = Instant.parse("2020-09-30T18:33:47.053Z");
+  private final IdResponse paymentId = new IdResponse(payment.id());
 
 
   @Test
@@ -42,9 +44,9 @@ class PaymentsServiceTest {
     List<Payment> paymentList = Collections.singletonList(payment);
     when(paymentsRepository.findAllPending(null, null)).thenReturn(paymentList);
 
-    List<Integer> actual = paymentsService.findAllPending(null, null);
+    List<IdResponse> actual = paymentsService.findAllPending(null, null);
 
-    List<Integer> expected = Collections.singletonList(payment.id());
+    List<IdResponse> expected = Collections.singletonList(paymentId);
     assertThat(actual, equalTo(expected));
     verify(paymentsRepository).findAllPending(null, null);
   }

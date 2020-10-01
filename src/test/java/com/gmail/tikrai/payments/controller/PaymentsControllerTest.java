@@ -13,6 +13,7 @@ import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ValidationException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.request.PaymentRequest;
+import com.gmail.tikrai.payments.response.IdResponse;
 import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import java.math.BigDecimal;
@@ -31,7 +32,8 @@ class PaymentsControllerTest {
 
   private final PaymentRequest paymentRequest = Fixture.paymentRequest().build();
   private final Payment payment = Fixture.payment().build();
-  private final List<Integer> paymentIdList = Collections.singletonList(payment.id());
+  private final IdResponse paymentId = new IdResponse(payment.id());
+  private final List<IdResponse> paymentIdList = Collections.singletonList(paymentId);
 
   private final BigDecimal zero = BigDecimal.valueOf(0, 2);
   private final BigDecimal one = BigDecimal.valueOf(1, 2);
@@ -41,7 +43,7 @@ class PaymentsControllerTest {
   void shouldFindAllNonCancelledPayments() {
     when(paymentsService.findAllPending(null, null)).thenReturn(paymentIdList);
 
-    ResponseEntity<List<Integer>> actual = paymentsController.findAllPending(null, null);
+    ResponseEntity<List<IdResponse>> actual = paymentsController.findAllPending(null, null);
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(null, null);
@@ -51,7 +53,7 @@ class PaymentsControllerTest {
   void shouldFindFilteredNonCancelledPayments() {
     when(paymentsService.findAllPending(zero, one)).thenReturn(paymentIdList);
 
-    ResponseEntity<List<Integer>> actual = paymentsController.findAllPending(zero, one);
+    ResponseEntity<List<IdResponse>> actual = paymentsController.findAllPending(zero, one);
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(zero, one);
@@ -61,7 +63,7 @@ class PaymentsControllerTest {
   void shouldFindFilteredNonCancelledPaymentsIfRangeEndIsSameAsStart() {
     when(paymentsService.findAllPending(one, one)).thenReturn(paymentIdList);
 
-    ResponseEntity<List<Integer>> actual = paymentsController.findAllPending(one, one);
+    ResponseEntity<List<IdResponse>> actual = paymentsController.findAllPending(one, one);
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentIdList, HttpStatus.OK)));
     verify(paymentsService).findAllPending(one, one);
