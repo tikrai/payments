@@ -71,7 +71,10 @@ class PaymentsRepositoryTest {
     Optional<Payment> actual = paymentsRepository.findById(payment.id());
 
     assertThat(actual, equalTo(Optional.of(payment)));
-    String expectedQuery = String.format("SELECT * FROM payments WHERE id = '%s'", payment.id());
+    String expectedQuery = String.format("SELECT payments.*, cancel_coeff.coeff "
+        + "FROM payments LEFT JOIN cancel_coeff ON payments.type = cancel_coeff.type "
+        + "WHERE id = '%s'",
+        payment.id());
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }
 

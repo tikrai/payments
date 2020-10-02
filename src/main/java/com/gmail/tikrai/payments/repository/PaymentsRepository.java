@@ -29,6 +29,8 @@ public class PaymentsRepository {
   public static final String DETAILS = "details";
   public static final String IP_ADDRESS = "ipaddress";
   public static final String COUNTRY = "country";
+  public static final String TABLE_COEFF = "cancel_coeff";
+  public static final String COEFF = "coeff";
 
   private static PaymentsMapper rowMapper = new PaymentsMapper();
   private static IdMapper idMapper = new IdMapper();
@@ -57,7 +59,14 @@ public class PaymentsRepository {
   }
 
   public Optional<Payment> findById(int id) {
-    String sql = String.format("SELECT * FROM %s WHERE %s = '%s'", TABLE, ID, id);
+    String sql = String.format("SELECT %s.*, %s.%s FROM %s "
+            + "LEFT JOIN %s "
+            + "ON %s.%s = %s.%s "
+            + "WHERE %s = '%s'",
+        TABLE, TABLE_COEFF, COEFF, TABLE,
+        TABLE_COEFF,
+        TABLE, TYPE, TABLE_COEFF, TYPE,
+        ID, id);
     return db.query(sql, rowMapper).stream().filter(Objects::nonNull).findFirst();
   }
 

@@ -56,6 +56,7 @@ public class PaymentRequest implements Validator {
         creditorIban,
         bicCode,
         details,
+        null,
         ipAddress,
         null
     );

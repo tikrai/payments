@@ -21,7 +21,8 @@ class PaymentsMapperTest {
 
   private final ResultSet rs = mock(ResultSet.class);
   private final PaymentsMapper paymentsMapper = new PaymentsMapper();
-  private Payment payment = Fixture.payment().cancelFee(0).build();
+  private final int cancelCoeff = 5;
+  private Payment payment = Fixture.payment().cancelFee(0).cancelCoeff(cancelCoeff).build();
 
   @BeforeEach
   void sutup() throws SQLException {
@@ -39,6 +40,7 @@ class PaymentsMapperTest {
     when(rs.getString(PaymentsRepository.CREDITOR_IBAN)).thenReturn(payment.creditorIban());
     when(rs.getString(PaymentsRepository.BIC_CODE)).thenReturn(payment.bicCode().orElse(null));
     when(rs.getString(PaymentsRepository.DETAILS)).thenReturn(payment.details().orElse(null));
+    when(rs.getInt(PaymentsRepository.COEFF)).thenReturn(cancelCoeff);
     when(rs.getString(PaymentsRepository.IP_ADDRESS)).thenReturn(payment.ipAddress().orElse(null));
     when(rs.getString(PaymentsRepository.COUNTRY)).thenReturn(payment.country().orElse(null));
   }
@@ -57,6 +59,13 @@ class PaymentsMapperTest {
     assertThat(actual, equalTo(payment.withCancelFee(null)));
   }
 
+  @Test
+  void shouldMapBookRowSuccessfullyWithNullCancelCoeff() throws SQLException {
+    when(rs.getInt(PaymentsRepository.COEFF)).thenThrow(SQLException.class);
+    Payment actual = paymentsMapper.mapRow(rs, 0);
+    assertThat(actual, equalTo(Fixture.payment().of(payment).cancelCoeff(null).build()));
+  }
+
   @AfterEach
   void verifyMocks() throws SQLException {
     verify(rs).getInt(PaymentsRepository.ID);
@@ -70,6 +79,7 @@ class PaymentsMapperTest {
     verify(rs).getString(PaymentsRepository.CREDITOR_IBAN);
     verify(rs).getString(PaymentsRepository.BIC_CODE);
     verify(rs).getString(PaymentsRepository.DETAILS);
+    verify(rs).getInt(PaymentsRepository.COEFF);
     verify(rs).getString(PaymentsRepository.IP_ADDRESS);
     verify(rs).getString(PaymentsRepository.COUNTRY);
     verify(rs).wasNull();

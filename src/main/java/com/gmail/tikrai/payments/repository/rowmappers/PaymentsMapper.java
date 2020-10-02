@@ -23,13 +23,22 @@ public class PaymentsMapper implements RowMapper<Payment> {
         rs.getString(PaymentsRepository.CREDITOR_IBAN),
         rs.getString(PaymentsRepository.BIC_CODE),
         rs.getString(PaymentsRepository.DETAILS),
+        getCancelCoeff(rs, PaymentsRepository.COEFF),
         rs.getString(PaymentsRepository.IP_ADDRESS),
         rs.getString(PaymentsRepository.COUNTRY)
     );
   }
 
-  private BigDecimal getBigDecimal(ResultSet rs, String strColName) throws SQLException {
-    BigDecimal value = BigDecimal.valueOf(rs.getInt(strColName), 2);
+  private BigDecimal getBigDecimal(ResultSet rs, String colName) throws SQLException {
+    BigDecimal value = BigDecimal.valueOf(rs.getInt(colName), 2);
     return rs.wasNull() ? null : value;
+  }
+
+  private Integer getCancelCoeff(ResultSet rs, String colName) {
+    try {
+      return rs.getInt(colName);
+    } catch (SQLException e) {
+      return null;
+    }
   }
 }

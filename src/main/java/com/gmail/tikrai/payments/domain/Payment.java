@@ -11,15 +11,9 @@ import java.util.Optional;
 public class Payment {
 
   public enum Type {
-    TYPE1(5),
-    TYPE2(10),
-    TYPE3(15);
-
-    public final int cancelCoeff;
-
-    Type(int cancelCoeff) {
-      this.cancelCoeff = cancelCoeff;
-    }
+    TYPE1,
+    TYPE2,
+    TYPE3,
   }
 
   public enum Currency {
@@ -37,6 +31,7 @@ public class Payment {
   private final String creditorIban;
   private final String bicCode;
   private final String details;
+  private final Integer cancelCoeff;
   private final String ipAddress;
   private final String country;
 
@@ -53,6 +48,7 @@ public class Payment {
       String creditorIban,
       String bicCode,
       String details,
+      Integer cancelCoeff,
       String ipAddress,
       String country
   ) {
@@ -67,33 +63,34 @@ public class Payment {
     this.creditorIban = creditorIban;
     this.bicCode = bicCode;
     this.details = details;
+    this.cancelCoeff = cancelCoeff;
     this.ipAddress = ipAddress;
     this.country = country;
   }
 
   public Payment withId(int id) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, ipAddress, country);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, country);
   }
 
   public Payment withCreated(Instant created) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, ipAddress, country);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, country);
   }
 
   public Payment withCancelled(boolean cancelled) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, ipAddress, country);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, country);
   }
 
   public Payment withCancelFee(BigDecimal cancelFee) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, ipAddress, country);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, country);
   }
 
   public Payment withIpAddress(String ipAddress) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, ipAddress, country);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, country);
   }
 
   @JsonProperty("id")
@@ -151,6 +148,11 @@ public class Payment {
     return Optional.ofNullable(details);
   }
 
+  @JsonProperty("cancel_coeff")
+  public Optional<Integer> cancelCoeff() {
+    return Optional.ofNullable(cancelCoeff);
+  }
+
   @JsonProperty("ip_address")
   public Optional<String> ipAddress() {
     return Optional.ofNullable(ipAddress);
@@ -182,6 +184,7 @@ public class Payment {
         && Objects.equals(creditorIban, payment.creditorIban)
         && Objects.equals(bicCode, payment.bicCode)
         && Objects.equals(details, payment.details)
+        && Objects.equals(cancelCoeff, payment.cancelCoeff)
         && Objects.equals(ipAddress, payment.ipAddress)
         && Objects.equals(country, payment.country);
   }
@@ -191,7 +194,7 @@ public class Payment {
   public int hashCode() {
     return Objects
         .hash(id, created, cancelled, cancelFee, type, amount, currency, debtorIban, creditorIban,
-            bicCode, details, ipAddress, country);
+            bicCode, details, cancelCoeff, ipAddress, country);
   }
 
   @Override
@@ -209,6 +212,7 @@ public class Payment {
         ", creditorIban='" + creditorIban + '\'' +
         ", bicCode='" + bicCode + '\'' +
         ", details='" + details + '\'' +
+        ", cancelCoeff=" + cancelCoeff +
         ", ipAddress='" + ipAddress + '\'' +
         ", country='" + country + '\'' +
         '}';

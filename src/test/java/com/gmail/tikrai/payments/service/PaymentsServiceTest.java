@@ -33,7 +33,7 @@ class PaymentsServiceTest {
   private final PaymentsService paymentsService =
       new PaymentsService(paymentsRepository, ipResolveService, timeService, timezone);
 
-  private final Payment payment = Fixture.payment().build();
+  private final Payment payment = Fixture.payment().cancelCoeff(5).build();
   private final Instant now = Instant.now();
   private final Instant creatTime = Instant.parse("2020-09-30T18:33:47.053Z");
   private final IdResponse paymentId = new IdResponse(payment.id());
@@ -55,13 +55,13 @@ class PaymentsServiceTest {
   void shouldGetCancellingFeeByIdForTwoHourOldPayment() {
     int hours = 2;
     Instant requestTime = creatTime.plus(Duration.ofHours(hours));
-    Payment payment = Fixture.payment().type(Type.TYPE1).created(creatTime).build();
+    Payment payment = Fixture.payment().type(Type.TYPE1).cancelCoeff(5).created(creatTime).build();
     when(timeService.now()).thenReturn(requestTime);
     when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
 
     PaymentCancelFeeResponse actualResponse = paymentsService.getCancellingFee(payment.id());
 
-    BigDecimal expactedPrice = BigDecimal.valueOf(payment.type().cancelCoeff * hours, 2);
+    BigDecimal expactedPrice = BigDecimal.valueOf(payment.cancelCoeff().get() * hours, 2);
     PaymentCancelFeeResponse expectedResponse =
         new PaymentCancelFeeResponse(0, true, expactedPrice);
     assertThat(actualResponse, equalTo(expectedResponse));
@@ -72,7 +72,7 @@ class PaymentsServiceTest {
   @Test
   void shouldGetCancellingFeeByIdForAlmostHourOldPayment() {
     Instant requestTime = creatTime.plus(Duration.ofHours(1).minus(Duration.ofSeconds(1)));
-    Payment payment = Fixture.payment().created(creatTime).build();
+    Payment payment = Fixture.payment().of(this.payment).created(creatTime).build();
     when(timeService.now()).thenReturn(requestTime);
     when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
 

@@ -48,7 +48,7 @@ public class PaymentsService {
     }
 
     long hours = Duration.between(payment.created(), now).toHours();
-    long cents = hours * payment.type().cancelCoeff;
+    long cents = hours * payment.cancelCoeff().get();
     BigDecimal euros = BigDecimal.valueOf(cents, 2);
 
     return new PaymentCancelFeeResponse(payment.id(), true, euros);

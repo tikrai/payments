@@ -19,6 +19,7 @@ public class PaymentFixture {
   private String creditorIban = "LT9999";
   private String bicCode = "AGBLLT2X";
   private String details = "details";
+  private Integer cancelCoeff = null;
   private String ipAddress = "127.0.0.1";
   private String country = null;
 
@@ -87,6 +88,11 @@ public class PaymentFixture {
     return this;
   }
 
+  public PaymentFixture cancelCoeff(Integer cancelCoeff) {
+    this.cancelCoeff = cancelCoeff;
+    return this;
+  }
+
   public PaymentFixture ipAddress(String ipAddress) {
     this.ipAddress = ipAddress;
     return this;
@@ -109,6 +115,7 @@ public class PaymentFixture {
     this.creditorIban = payment.creditorIban();
     this.bicCode = payment.bicCode().orElse(null);
     this.details = payment.details().orElse(null);
+    this.cancelCoeff = payment.cancelCoeff().orElse(null);
     this.ipAddress = payment.ipAddress().orElse(null);
     this.country = payment.country().orElse(null);
     return this;
@@ -116,6 +123,6 @@ public class PaymentFixture {
 
   public Payment build() {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, ipAddress, country);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, country);
   }
 }
