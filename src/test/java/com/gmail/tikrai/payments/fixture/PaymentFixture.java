@@ -22,6 +22,7 @@ public class PaymentFixture {
   private Integer cancelCoeff = null;
   private String ipAddress = "127.0.0.1";
   private String country = null;
+  private Boolean notified = null;
 
   public PaymentFixture id(int id) {
     this.id = id;
@@ -103,6 +104,11 @@ public class PaymentFixture {
     return this;
   }
 
+  public PaymentFixture notified(Boolean notified) {
+    this.notified = notified;
+    return this;
+  }
+
   public PaymentFixture of(Payment payment) {
     this.id = payment.id();
     this.created = payment.created();
@@ -118,11 +124,12 @@ public class PaymentFixture {
     this.cancelCoeff = payment.cancelCoeff().orElse(null);
     this.ipAddress = payment.ipAddress().orElse(null);
     this.country = payment.country().orElse(null);
+    this.notified = payment.notified().orElse(null);
     return this;
   }
 
   public Payment build() {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, cancelCoeff, ipAddress, country);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
   }
 }

@@ -27,11 +27,11 @@ import org.junit.jupiter.api.Test;
 
 class PaymentsServiceTest {
   private final PaymentsRepository paymentsRepository = mock(PaymentsRepository.class);
-  private final IpResolveService ipResolveService = mock(IpResolveService.class);
+  private final RestService restService = mock(RestService.class);
   private final TimeService timeService = mock(TimeService.class);
   private final String timezone = "Europe/Vilnius";
   private final PaymentsService paymentsService =
-      new PaymentsService(paymentsRepository, ipResolveService, timeService, timezone);
+      new PaymentsService(paymentsRepository, restService, timeService, timezone);
 
   private final Payment payment = Fixture.payment().cancelCoeff(5).build();
   private final Instant now = Instant.now();
@@ -124,7 +124,8 @@ class PaymentsServiceTest {
 
     assertThat(actual, equalTo(paymentNow));
     verify(paymentsRepository).create(paymentNow);
-    verify(ipResolveService).resolveIpAdress(paymentNow);
+    verify(restService).resolveIpAdress(paymentNow);
+    verify(restService).notifyPaymentSaved(paymentNow);
     verify(timeService).now();
   }
 
@@ -199,6 +200,6 @@ class PaymentsServiceTest {
 
   @AfterEach
   void verifyMocks() {
-    verifyNoMoreInteractions(paymentsRepository, ipResolveService, timeService);
+    verifyNoMoreInteractions(paymentsRepository, restService, timeService);
   }
 }

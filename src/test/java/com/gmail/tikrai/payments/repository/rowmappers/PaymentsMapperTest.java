@@ -3,6 +3,7 @@ package com.gmail.tikrai.payments.repository.rowmappers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -22,7 +23,11 @@ class PaymentsMapperTest {
   private final ResultSet rs = mock(ResultSet.class);
   private final PaymentsMapper paymentsMapper = new PaymentsMapper();
   private final int cancelCoeff = 5;
-  private Payment payment = Fixture.payment().cancelFee(0).cancelCoeff(cancelCoeff).build();
+  private Payment payment = Fixture.payment()
+      .cancelFee(0)
+      .cancelCoeff(cancelCoeff)
+      .notified(true)
+      .build();
 
   @BeforeEach
   void sutup() throws SQLException {
@@ -43,27 +48,36 @@ class PaymentsMapperTest {
     when(rs.getInt(PaymentsRepository.COEFF)).thenReturn(cancelCoeff);
     when(rs.getString(PaymentsRepository.IP_ADDRESS)).thenReturn(payment.ipAddress().orElse(null));
     when(rs.getString(PaymentsRepository.COUNTRY)).thenReturn(payment.country().orElse(null));
+    when(rs.getBoolean(PaymentsRepository.NOTIFIED)).thenReturn(payment.notified().orElse(false));
   }
 
   @Test
   void shouldMapBookRowSuccessfully() throws SQLException {
-    when(rs.wasNull()).thenReturn(false);
+    when(rs.wasNull()).thenReturn(false).thenReturn(false);
     Payment actual = paymentsMapper.mapRow(rs, 0);
     assertThat(actual, equalTo(payment));
   }
 
   @Test
   void shouldMapBookRowSuccessfullyWithNullCancelFee() throws SQLException {
-    when(rs.wasNull()).thenReturn(true);
+    when(rs.wasNull()).thenReturn(true).thenReturn(false);
     Payment actual = paymentsMapper.mapRow(rs, 0);
     assertThat(actual, equalTo(payment.withCancelFee(null)));
   }
 
   @Test
   void shouldMapBookRowSuccessfullyWithNullCancelCoeff() throws SQLException {
+    when(rs.wasNull()).thenReturn(false).thenReturn(false);
     when(rs.getInt(PaymentsRepository.COEFF)).thenThrow(SQLException.class);
     Payment actual = paymentsMapper.mapRow(rs, 0);
     assertThat(actual, equalTo(Fixture.payment().of(payment).cancelCoeff(null).build()));
+  }
+
+  @Test
+  void shouldMapBookRowSuccessfullyWithNullNotified() throws SQLException {
+    when(rs.wasNull()).thenReturn(false).thenReturn(true);
+    Payment actual = paymentsMapper.mapRow(rs, 0);
+    assertThat(actual, equalTo(Fixture.payment().of(payment).notified(null).build()));
   }
 
   @AfterEach
@@ -82,7 +96,8 @@ class PaymentsMapperTest {
     verify(rs).getInt(PaymentsRepository.COEFF);
     verify(rs).getString(PaymentsRepository.IP_ADDRESS);
     verify(rs).getString(PaymentsRepository.COUNTRY);
-    verify(rs).wasNull();
+    verify(rs).getBoolean(PaymentsRepository.NOTIFIED);
+    verify(rs, times(2)).wasNull();
     verifyNoMoreInteractions(rs);
   }
 }

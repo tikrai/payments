@@ -25,7 +25,8 @@ public class PaymentsMapper implements RowMapper<Payment> {
         rs.getString(PaymentsRepository.DETAILS),
         getCancelCoeff(rs, PaymentsRepository.COEFF),
         rs.getString(PaymentsRepository.IP_ADDRESS),
-        rs.getString(PaymentsRepository.COUNTRY)
+        rs.getString(PaymentsRepository.COUNTRY),
+        getBoolean(rs, PaymentsRepository.NOTIFIED)
     );
   }
 
@@ -40,5 +41,10 @@ public class PaymentsMapper implements RowMapper<Payment> {
     } catch (SQLException e) {
       return null;
     }
+  }
+
+  private Boolean getBoolean(ResultSet rs, String colName) throws SQLException {
+    boolean value = rs.getBoolean(colName);
+    return rs.wasNull() ? null : value;
   }
 }

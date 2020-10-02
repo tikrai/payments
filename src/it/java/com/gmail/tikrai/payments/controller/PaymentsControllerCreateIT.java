@@ -2,6 +2,7 @@ package com.gmail.tikrai.payments.controller;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.matchesRegex;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.client.ResponseCreator;
 
 class PaymentsControllerCreateIT extends IntegrationTestCase {
 
@@ -27,23 +29,21 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
   PaymentsRepository paymentsRepository;
 
   private final PaymentRequest payment = Fixture.paymentRequest().build();
-  private final String ipApiResponse = "{\"country\": \"Paylandia\"}";
+  private final String ipApiResponse = "{\"country\": \"Luminoria\",\"countryCode\": \"LT\"}";
+  private final String notifyApiResponse = "anything";
+  private final SleepThread ipApiThread = new SleepThread(200);
+  private final SleepThread notifyApiThread = new SleepThread(200);
+  private final String ipApiFormat = "(http://ip-api.com/json/).+";
+  private final String notifyApiFormat = "(http://numbersapi.com/).+";
 
   @Test
-  void shouldCreatePayment() throws InterruptedException {
-    SleepThread ipApiThread = new SleepThread();
-
-    mockServer.expect(requestTo("http://ip-api.com/json/127.0.0.1"))
+  void shouldCreatePaymentFastWhenApisAreSlow() throws InterruptedException {
+    mockServer.expect(requestTo(matchesRegex(ipApiFormat)))
         .andExpect(method(HttpMethod.GET))
-        .andRespond(request -> {
-          ipApiThread.start();
-          try {
-            ipApiThread.join();
-          } catch (InterruptedException ignored) {
-            //ignored
-          }
-          return withSuccess(ipApiResponse, MediaType.APPLICATION_JSON).createResponse(request);
-        });
+        .andRespond(delayedResponse(ipApiThread, ipApiResponse));
+    mockServer.expect(requestTo(matchesRegex(notifyApiFormat)))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(delayedResponse(notifyApiThread, notifyApiResponse));
 
     Response response = given().body(payment).post(Endpoint.PAYMENTS);
 
@@ -55,9 +55,25 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
     assertThat(actual, equalTo(expectedBeforeUpdate));
     assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(actual)));
     ipApiThread.interrupt();
-    Thread.sleep(2000);
-    Payment afterUpdate = Fixture.payment().of(expectedBeforeUpdate).country("Paylandia").build();
+    notifyApiThread.interrupt();
+    Thread.sleep(400);
+    Payment afterUpdate = Fixture.payment().of(expectedBeforeUpdate)
+        .country("Luminoria")
+        .notified(true).build();
     assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(afterUpdate)));
+    //todo extract delay labdas and add test create payment with unsuccessfull requests to apis
+  }
+
+  private ResponseCreator delayedResponse(SleepThread sleepThread, String apiResponse) {
+    return request -> {
+      sleepThread.start();
+      try {
+        sleepThread.join();
+      } catch (InterruptedException ignored) {
+        //ignored
+      }
+      return withSuccess(apiResponse, MediaType.APPLICATION_JSON).createResponse(request);
+    };
   }
 
   @Test
@@ -83,9 +99,15 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
 
   private static class SleepThread extends Thread {
 
+    private final int delay;
+
+    public SleepThread(int delay) {
+      this.delay = delay;
+    }
+
     public void run() {
       try {
-        Thread.sleep(1000);
+        Thread.sleep(delay);
       } catch (InterruptedException ignored) {
         //ignored
       }

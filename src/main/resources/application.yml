@@ -18,6 +18,7 @@ server:
 payments:
   timezone: "Europe/Vilnius"
   ipResolveApiUrl: "http://ip-api.com/json/%s"
+  notifyApi: "http://numbersapi.com"
 
 ---
 spring:

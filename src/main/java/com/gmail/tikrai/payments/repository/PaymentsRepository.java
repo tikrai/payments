@@ -29,6 +29,7 @@ public class PaymentsRepository {
   public static final String DETAILS = "details";
   public static final String IP_ADDRESS = "ipaddress";
   public static final String COUNTRY = "country";
+  public static final String NOTIFIED = "notified";
   public static final String TABLE_COEFF = "cancel_coeff";
   public static final String COEFF = "coeff";
 
@@ -97,6 +98,12 @@ public class PaymentsRepository {
           .format("UPDATE %s SET (%s) = ('%s') WHERE %s = %s", TABLE, COUNTRY, country, ID, id);
       db.update(sql);
     }
+  }
+
+  public void logNotified(int id, boolean success) {
+    String sql = String
+        .format("UPDATE %s SET (%s) = ('%s') WHERE %s = %s", TABLE, NOTIFIED, success, ID, id);
+    db.update(sql);
   }
 
   public Optional<Payment> cancel(int id, BigDecimal fee) {

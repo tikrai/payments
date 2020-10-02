@@ -128,6 +128,16 @@ class PaymentsRepositoryTest {
   }
 
   @Test
+  void shouldLogNotified() {
+    boolean success = true;
+    paymentsRepository.logNotified(payment.id(), success);
+
+    String expectedQuery = String
+        .format("UPDATE payments SET (notified) = ('%s') WHERE id = %s", success, payment.id());
+    verify(db).update(eq(expectedQuery));
+  }
+
+  @Test
   void shouldSkipLoggingCountryIfNull() {
     paymentsRepository.logCountry(1, null);
   }

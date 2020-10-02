@@ -32,7 +32,7 @@ public class IntegrationTestCase {
   public void setup() {
     RestAssured.port = port;
     flushTables(PaymentsRepository.TABLE);
-    mockServer = MockRestServiceServer.createServer(restTemplate);
+    mockServer = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
   }
 
   private void flushTables(String... tables) {

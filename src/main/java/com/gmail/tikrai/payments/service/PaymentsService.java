@@ -21,19 +21,19 @@ import org.springframework.stereotype.Service;
 public class PaymentsService {
 
   private final PaymentsRepository paymentsRepository;
-  private final IpResolveService ipResolveService;
+  private final RestService restService;
   private final TimeService timeService;
   private final String timezone;
 
   @Autowired
   public PaymentsService(
       PaymentsRepository paymentsRepository,
-      IpResolveService ipResolveService,
+      RestService restService,
       TimeService timeService,
       @Value("${payments.timezone}") String timezone
   ) {
     this.paymentsRepository = paymentsRepository;
-    this.ipResolveService = ipResolveService;
+    this.restService = restService;
     this.timeService = timeService;
     this.timezone = timezone;
   }
@@ -69,7 +69,8 @@ public class PaymentsService {
 
   public Payment create(Payment payment) {
     Payment created = paymentsRepository.create(payment.withCreated(timeService.now()));
-    ipResolveService.resolveIpAdress(created);
+    restService.resolveIpAdress(created);
+    restService.notifyPaymentSaved(created);
     return created;
   }
 
