@@ -47,7 +47,7 @@ public class PaymentRequest implements Validator {
     return new Payment(
         0,
         null,
-        false,
+        null,
         null,
         Payment.Type.valueOf(type),
         amount,

@@ -30,11 +30,12 @@ class PaymentsMapperTest {
       .build();
 
   @BeforeEach
-  void sutup() throws SQLException {
+  void setup() throws SQLException {
     when(rs.getInt(PaymentsRepository.ID)).thenReturn(payment.id());
     when(rs.getTimestamp(PaymentsRepository.CREATED))
         .thenReturn(new Timestamp(payment.created().toEpochMilli()));
-    when(rs.getBoolean(PaymentsRepository.CANCELLED)).thenReturn(payment.cancelled());
+    when(rs.getTimestamp(PaymentsRepository.CANCELLED))
+        .thenReturn(payment.cancelled().map(i -> new Timestamp(i.toEpochMilli())).orElse(null));
     when(rs.getInt(PaymentsRepository.CANCEL_FEE))
         .thenReturn(payment.cancelFee().unscaledValue().intValue());
     when(rs.getString(PaymentsRepository.TYPE)).thenReturn(payment.type().toString());
@@ -52,21 +53,21 @@ class PaymentsMapperTest {
   }
 
   @Test
-  void shouldMapBookRowSuccessfully() throws SQLException {
+  void shouldMapPaymentRowSuccessfully() throws SQLException {
     when(rs.wasNull()).thenReturn(false).thenReturn(false);
     Payment actual = paymentsMapper.mapRow(rs, 0);
     assertThat(actual, equalTo(payment));
   }
 
   @Test
-  void shouldMapBookRowSuccessfullyWithNullCancelFee() throws SQLException {
+  void shouldMapPaymentRowSuccessfullyWithNullCancelFee() throws SQLException {
     when(rs.wasNull()).thenReturn(true).thenReturn(false);
     Payment actual = paymentsMapper.mapRow(rs, 0);
     assertThat(actual, equalTo(payment.withCancelFee(null)));
   }
 
   @Test
-  void shouldMapBookRowSuccessfullyWithNullCancelCoeff() throws SQLException {
+  void shouldMapPaymentRowSuccessfullyWithNullCancelCoeff() throws SQLException {
     when(rs.wasNull()).thenReturn(false).thenReturn(false);
     when(rs.getInt(PaymentsRepository.COEFF)).thenThrow(SQLException.class);
     Payment actual = paymentsMapper.mapRow(rs, 0);
@@ -74,7 +75,7 @@ class PaymentsMapperTest {
   }
 
   @Test
-  void shouldMapBookRowSuccessfullyWithNullNotified() throws SQLException {
+  void shouldMapPaymentRowSuccessfullyWithNullNotified() throws SQLException {
     when(rs.wasNull()).thenReturn(false).thenReturn(true);
     Payment actual = paymentsMapper.mapRow(rs, 0);
     assertThat(actual, equalTo(Fixture.payment().of(payment).notified(null).build()));
@@ -84,7 +85,7 @@ class PaymentsMapperTest {
   void verifyMocks() throws SQLException {
     verify(rs).getInt(PaymentsRepository.ID);
     verify(rs).getTimestamp(PaymentsRepository.CREATED);
-    verify(rs).getBoolean(PaymentsRepository.CANCELLED);
+    verify(rs).getTimestamp(PaymentsRepository.CANCELLED);
     verify(rs).getInt(PaymentsRepository.CANCEL_FEE);
     verify(rs).getString(PaymentsRepository.TYPE);
     verify(rs).getInt(PaymentsRepository.AMOUNT);

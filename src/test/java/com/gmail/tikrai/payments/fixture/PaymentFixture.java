@@ -10,7 +10,7 @@ public class PaymentFixture {
 
   private int id = 0;
   private Instant created = Instant.now();
-  private boolean cancelled = false;
+  private Instant cancelled = null;
   private BigDecimal cancelFee = null;
   private Type type = Type.TYPE1;
   private BigDecimal amount = BigDecimal.valueOf(10.01);
@@ -34,7 +34,7 @@ public class PaymentFixture {
     return this;
   }
 
-  public PaymentFixture cancelled(boolean cancelled) {
+  public PaymentFixture cancelled(Instant cancelled) {
     this.cancelled = cancelled;
     return this;
   }
@@ -112,7 +112,7 @@ public class PaymentFixture {
   public PaymentFixture of(Payment payment) {
     this.id = payment.id();
     this.created = payment.created();
-    this.cancelled = payment.cancelled();
+    this.cancelled = payment.cancelled().orElse(null);
     this.cancelFee = payment.cancelFee();
     this.type = payment.type();
     this.amount = payment.amount();

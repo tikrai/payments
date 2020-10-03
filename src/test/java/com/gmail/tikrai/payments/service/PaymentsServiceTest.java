@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.domain.Payment.Type;
 import com.gmail.tikrai.payments.exception.ConflictException;
@@ -15,7 +16,6 @@ import com.gmail.tikrai.payments.exception.PaymentNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import com.gmail.tikrai.payments.response.IdResponse;
-import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -35,8 +35,10 @@ class PaymentsServiceTest {
 
   private final Payment payment = Fixture.payment().cancelCoeff(5).build();
   private final Instant now = Instant.now();
-  private final Instant creatTime = Instant.parse("2020-09-30T18:33:47.053Z");
+  private final Instant createTime = Instant.parse("2020-09-30T18:33:47.053Z");
   private final IdResponse paymentId = new IdResponse(payment.id());
+  private final BigDecimal zero = BigDecimal.valueOf(0, 2);
+  private final CancelFee fee = new CancelFee(payment.id(), true, zero, now);
 
 
   @Test
@@ -54,16 +56,15 @@ class PaymentsServiceTest {
   @Test
   void shouldGetCancellingFeeByIdForTwoHourOldPayment() {
     int hours = 2;
-    Instant requestTime = creatTime.plus(Duration.ofHours(hours));
-    Payment payment = Fixture.payment().type(Type.TYPE1).cancelCoeff(5).created(creatTime).build();
+    Instant requestTime = createTime.plus(Duration.ofHours(hours));
+    Payment payment = Fixture.payment().type(Type.TYPE1).cancelCoeff(5).created(createTime).build();
     when(timeService.now()).thenReturn(requestTime);
     when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
 
-    PaymentCancelFeeResponse actualResponse = paymentsService.getCancellingFee(payment.id());
+    CancelFee actualResponse = paymentsService.getCancellingFee(payment.id());
 
     BigDecimal expactedPrice = BigDecimal.valueOf(payment.cancelCoeff().get() * hours, 2);
-    PaymentCancelFeeResponse expectedResponse =
-        new PaymentCancelFeeResponse(0, true, expactedPrice);
+    CancelFee expectedResponse = new CancelFee(0, true, expactedPrice, requestTime);
     assertThat(actualResponse, equalTo(expectedResponse));
     verify(paymentsRepository).findById(payment.id());
     verify(timeService).now();
@@ -71,16 +72,15 @@ class PaymentsServiceTest {
 
   @Test
   void shouldGetCancellingFeeByIdForAlmostHourOldPayment() {
-    Instant requestTime = creatTime.plus(Duration.ofHours(1).minus(Duration.ofSeconds(1)));
-    Payment payment = Fixture.payment().of(this.payment).created(creatTime).build();
+    Instant requestTime = createTime.plus(Duration.ofHours(1).minus(Duration.ofSeconds(1)));
+    Payment payment = Fixture.payment().of(this.payment).created(createTime).build();
     when(timeService.now()).thenReturn(requestTime);
     when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
 
-    PaymentCancelFeeResponse actualResponse = paymentsService.getCancellingFee(payment.id());
+    CancelFee actualResponse = paymentsService.getCancellingFee(payment.id());
 
     BigDecimal expectedPrice = BigDecimal.valueOf(0, 2);
-    PaymentCancelFeeResponse expectedResponse =
-        new PaymentCancelFeeResponse(0, true, expectedPrice);
+    CancelFee expectedResponse = new CancelFee(0, true, expectedPrice, requestTime);
     assertThat(actualResponse, equalTo(expectedResponse));
     verify(paymentsRepository).findById(payment.id());
     verify(timeService).now();
@@ -92,9 +92,9 @@ class PaymentsServiceTest {
     Payment oldPayment = payment.withCreated(now.minus(Duration.ofHours(25)));
     when(paymentsRepository.findById(oldPayment.id())).thenReturn(Optional.of(oldPayment));
 
-    PaymentCancelFeeResponse actual = paymentsService.getCancellingFee(oldPayment.id());
+    CancelFee actual = paymentsService.getCancellingFee(oldPayment.id());
 
-    PaymentCancelFeeResponse expected = new PaymentCancelFeeResponse(0, false, null);
+    CancelFee expected = new CancelFee(0, false, null, now);
     assertThat(actual, equalTo(expected));
     verify(paymentsRepository).findById(payment.id());
     verify(timeService).now();
@@ -131,19 +131,18 @@ class PaymentsServiceTest {
 
   @Test
   void shouldCancelPayment() {
-    Payment cancelled = payment.withCancelled(true);
-    BigDecimal zero = BigDecimal.valueOf(0, 2);
+    Payment cancelled = payment.withCancelled(Instant.now());
     when(paymentsRepository.findById(payment.id()))
         .thenReturn(Optional.of(payment.withCancelFee(zero)));
     when(timeService.now()).thenReturn(now);
-    when(paymentsRepository.cancel(payment.id(), zero)).thenReturn(Optional.of(cancelled));
+    when(paymentsRepository.cancel(fee)).thenReturn(Optional.of(cancelled));
 
     Payment actual = paymentsService.cancel(payment.id());
 
     assertThat(actual, equalTo(cancelled));
     verify(paymentsRepository).findById(payment.id());
     verify(timeService).now();
-    verify(paymentsRepository).cancel(payment.id(), zero);
+    verify(paymentsRepository).cancel(fee);
   }
 
   @Test
@@ -162,12 +161,9 @@ class PaymentsServiceTest {
 
   @Test
   void shouldFailToCancelPaymentIfAfterCalculationDoNotExistAnymore() {
-    BigDecimal zero = BigDecimal.valueOf(0, 2);
-    when(paymentsRepository.findById(payment.id()))
-        .thenReturn(Optional.of(payment));
+    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
     when(timeService.now()).thenReturn(now);
-    when(paymentsRepository.cancel(payment.id(), zero))
-        .thenReturn(Optional.empty());
+    when(paymentsRepository.cancel(fee)).thenReturn(Optional.empty());
 
     String message = assertThrows(
         PaymentNotFoundException.class,
@@ -178,7 +174,7 @@ class PaymentsServiceTest {
     assertThat(message, equalTo(expectedMessage));
     verify(paymentsRepository).findById(payment.id());
     verify(timeService).now();
-    verify(paymentsRepository).cancel(payment.id(), zero);
+    verify(paymentsRepository).cancel(fee);
   }
 
   @Test

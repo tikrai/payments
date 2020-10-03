@@ -1,11 +1,11 @@
 package com.gmail.tikrai.payments.service;
 
+import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ConflictException;
 import com.gmail.tikrai.payments.exception.PaymentNotFoundException;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import com.gmail.tikrai.payments.response.IdResponse;
-import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -38,20 +38,20 @@ public class PaymentsService {
     this.timezone = timezone;
   }
 
-  private PaymentCancelFeeResponse cancelFee(Payment payment) {
+  private CancelFee cancelFee(Payment payment) {
     Instant now = timeService.now();
     LocalDate dateCreated = payment.created().atZone(ZoneId.of(timezone)).toLocalDate();
     LocalDate dateNow = now.atZone(ZoneId.of(timezone)).toLocalDate();
 
     if (!dateNow.equals(dateCreated)) {
-      return new PaymentCancelFeeResponse(payment.id(), false, null);
+      return new CancelFee(payment.id(), false, null, now);
     }
 
     long hours = Duration.between(payment.created(), now).toHours();
     long cents = hours * payment.cancelCoeff().get();
     BigDecimal euros = BigDecimal.valueOf(cents, 2);
 
-    return new PaymentCancelFeeResponse(payment.id(), true, euros);
+    return new CancelFee(payment.id(), true, euros, now);
   }
 
   public List<IdResponse> findAllPending(BigDecimal min, BigDecimal max) {
@@ -61,7 +61,7 @@ public class PaymentsService {
         .collect(Collectors.toList());
   }
 
-  public PaymentCancelFeeResponse getCancellingFee(int id) {
+  public CancelFee getCancellingFee(int id) {
     Payment payment = paymentsRepository.findById(id)
         .orElseThrow(() -> new PaymentNotFoundException(id));
     return cancelFee(payment);
@@ -75,15 +75,14 @@ public class PaymentsService {
   }
 
   public Payment cancel(int id) {
-    PaymentNotFoundException notFound = new PaymentNotFoundException(id);
-
-    Payment payment = paymentsRepository.findById(id).orElseThrow(() -> notFound);
-    PaymentCancelFeeResponse fee = cancelFee(payment);
+    Payment payment = paymentsRepository.findById(id)
+        .orElseThrow(() -> new PaymentNotFoundException(id));
+    CancelFee fee = cancelFee(payment);
 
     if (!fee.cancelPossible()) {
       throw new ConflictException(String.format("Not possible to cancel payment '%s'", id));
     }
 
-    return paymentsRepository.cancel(id, fee.price()).orElseThrow(() -> notFound);
+    return paymentsRepository.cancel(fee).orElseThrow(() -> new PaymentNotFoundException(id));
   }
 }

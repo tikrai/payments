@@ -10,10 +10,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +30,8 @@ class PaymentsRepositoryTest {
 
   private final Payment payment = Fixture.payment().build();
   private final List<Payment> paymentList = Collections.singletonList(payment);
+  private final BigDecimal zero = BigDecimal.valueOf(0, 2);
+  private final CancelFee fee = new CancelFee(payment.id(), true, zero, Instant.now());
 
   @Test
   void shouldFindAllPayments() {
@@ -47,7 +51,7 @@ class PaymentsRepositoryTest {
     List<Payment> actual = paymentsRepository.findAllPending(null, null);
 
     assertThat(actual, equalTo(Collections.singletonList(payment)));
-    String expectedQuery = "SELECT * FROM payments WHERE cancelled = false";
+    String expectedQuery = "SELECT * FROM payments WHERE cancelled IS NULL";
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }
 
@@ -60,7 +64,7 @@ class PaymentsRepositoryTest {
 
     assertThat(actual, equalTo(Collections.singletonList(payment)));
     String expectedQuery =
-        "SELECT * FROM payments WHERE cancelled = false AND amount >= 1 AND amount <= 209";
+        "SELECT * FROM payments WHERE cancelled IS NULL AND amount >= 1 AND amount <= 209";
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }
 
@@ -146,12 +150,12 @@ class PaymentsRepositoryTest {
   void shouldCancelPayment() {
     when(db.query(anyString(), any(RowMapper.class))).thenReturn(paymentList);
 
-    Optional<Payment> actual = paymentsRepository.cancel(payment.id(), BigDecimal.ZERO);
+    Optional<Payment> actual = paymentsRepository.cancel(fee);
 
     assertThat(actual, equalTo(Optional.of(payment)));
     String expectedQuery = String.format(
-        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s RETURNING *",
-        payment.id()
+        "UPDATE payments SET (cancelled, cancel_fee) = ('%s', 0) WHERE id = %s RETURNING *",
+        new Timestamp(fee.time().toEpochMilli()), payment.id()
     );
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }
@@ -160,12 +164,12 @@ class PaymentsRepositoryTest {
   void shouldFailtoCancelPaymentIfNotExists() {
     when(db.query(anyString(), any(RowMapper.class))).thenReturn(Collections.emptyList());
 
-    Optional<Payment> actual = paymentsRepository.cancel(payment.id(), BigDecimal.ZERO);
+    Optional<Payment> actual = paymentsRepository.cancel(fee);
 
     assertThat(actual, equalTo(Optional.empty()));
     String expectedQuery = String.format(
-        "UPDATE payments SET (cancelled, cancel_fee) = (true, 0) WHERE id = %s RETURNING *",
-        payment.id()
+        "UPDATE payments SET (cancelled, cancel_fee) = ('%s', 0) WHERE id = %s RETURNING *",
+        new Timestamp(fee.time().toEpochMilli()), payment.id()
     );
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }

@@ -37,4 +37,12 @@ public class IdResponse {
   public int hashCode() {
     return Objects.hash(id);
   }
+
+  @Override
+  @Generated
+  public String toString() {
+    return "IdResponse{" +
+        "id=" + id +
+        '}';
+  }
 }

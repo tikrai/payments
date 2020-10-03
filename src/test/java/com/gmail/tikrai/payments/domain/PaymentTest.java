@@ -13,11 +13,14 @@ class PaymentTest {
 
   private final ObjectMapper mapper = Fixture.mapper();
   private final String paymentJson = "{"
-      + "\"id\":0,\"created\":\"-1000000000-01-01T00:00:00Z\",\"cancelled\":false,"
+      + "\"id\":0,\"created\":\"-1000000000-01-01T00:00:00Z\","
+      + "\"cancelled\":\"+1000000000-12-31T23:59:59.999999999Z\","
       + "\"type\":\"TYPE1\",\"amount\":10.01,\"currency\":\"EUR\",\"debtor_iban\":\"LT0001\","
       + "\"creditor_iban\":\"LT9999\",\"bic_code\":\"AGBLLT2X\",\"details\":\"details\""
       + ",\"ip_address\":\"127.0.0.1\"}";
-  private final Payment payment = Fixture.payment().created(Instant.MIN).build();
+  private final Payment payment = Fixture.payment()
+      .created(Instant.MIN)
+      .cancelled(Instant.MAX).build();
 
   @Test
   void shouldSerializePayment() throws JsonProcessingException {

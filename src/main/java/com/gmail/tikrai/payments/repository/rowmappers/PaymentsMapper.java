@@ -5,6 +5,9 @@ import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Optional;
 import org.springframework.jdbc.core.RowMapper;
 
 public class PaymentsMapper implements RowMapper<Payment> {
@@ -13,8 +16,8 @@ public class PaymentsMapper implements RowMapper<Payment> {
   public Payment mapRow(ResultSet rs, int rowNum) throws SQLException {
     return new Payment(
         rs.getInt(PaymentsRepository.ID),
-        rs.getTimestamp(PaymentsRepository.CREATED).toInstant(),
-        rs.getBoolean(PaymentsRepository.CANCELLED),
+        getInstant(rs, PaymentsRepository.CREATED),
+        getInstant(rs, PaymentsRepository.CANCELLED),
         getBigDecimal(rs, PaymentsRepository.CANCEL_FEE),
         Payment.Type.valueOf(rs.getString(PaymentsRepository.TYPE)),
         BigDecimal.valueOf(rs.getInt(PaymentsRepository.AMOUNT), 2),
@@ -28,6 +31,10 @@ public class PaymentsMapper implements RowMapper<Payment> {
         rs.getString(PaymentsRepository.COUNTRY),
         getBoolean(rs, PaymentsRepository.NOTIFIED)
     );
+  }
+
+  private Instant getInstant(ResultSet rs, String cancelled) throws SQLException {
+    return Optional.ofNullable(rs.getTimestamp(cancelled)).map(Timestamp::toInstant).orElse(null);
   }
 
   private BigDecimal getBigDecimal(ResultSet rs, String colName) throws SQLException {

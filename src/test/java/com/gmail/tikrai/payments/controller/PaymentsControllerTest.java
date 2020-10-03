@@ -9,14 +9,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.exception.ValidationException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.response.IdResponse;
-import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -123,12 +124,10 @@ class PaymentsControllerTest {
 
   @Test
   void shouldFindPaymentCancellingFeeById() {
-    PaymentCancelFeeResponse paymentResponse =
-        new PaymentCancelFeeResponse(1, true, one);
+    CancelFee paymentResponse = new CancelFee(1, true, one, Instant.now());
     when(paymentsService.getCancellingFee(payment.id())).thenReturn(paymentResponse);
 
-    ResponseEntity<PaymentCancelFeeResponse> actual =
-        paymentsController.getCancellingFee(payment.id());
+    ResponseEntity<CancelFee> actual = paymentsController.getCancellingFee(payment.id());
 
     assertThat(actual, equalTo(new ResponseEntity<>(paymentResponse, HttpStatus.OK)));
     verify(paymentsService).getCancellingFee(payment.id());
@@ -160,7 +159,7 @@ class PaymentsControllerTest {
 
   @Test
   void shouldCancelPayment() {
-    Payment cancelled = payment.withCancelled(true);
+    Payment cancelled = payment.withCancelled(Instant.now());
     when(paymentsService.cancel(payment.id())).thenReturn(cancelled);
 
     ResponseEntity<Payment> actual = paymentsController.cancel(payment.id());

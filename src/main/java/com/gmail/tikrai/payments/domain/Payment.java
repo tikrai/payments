@@ -22,7 +22,7 @@ public class Payment {
 
   private final int id;
   private final Instant created;
-  private final boolean cancelled;
+  private final Instant cancelled;
   private final BigDecimal cancelFee;
   private final Type type;
   private final BigDecimal amount;
@@ -40,7 +40,7 @@ public class Payment {
   public Payment(
       int id,
       Instant created,
-      boolean cancelled,
+      Instant cancelled,
       BigDecimal cancelFee,
       Type type,
       BigDecimal amount,
@@ -81,7 +81,7 @@ public class Payment {
         creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
   }
 
-  public Payment withCancelled(boolean cancelled) {
+  public Payment withCancelled(Instant cancelled) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
         creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
   }
@@ -107,8 +107,8 @@ public class Payment {
   }
 
   @JsonProperty("cancelled")
-  public boolean cancelled() {
-    return cancelled;
+  public Optional<Instant> cancelled() {
+    return Optional.ofNullable(cancelled);
   }
 
   @JsonProperty("cancel_fee")
@@ -182,8 +182,8 @@ public class Payment {
     }
     Payment payment = (Payment) o;
     return id == payment.id
-        && cancelled == payment.cancelled
         && Objects.equals(created, payment.created)
+        && Objects.equals(cancelled, payment.cancelled)
         && Objects.equals(cancelFee, payment.cancelFee)
         && type == payment.type
         && Objects.equals(amount, payment.amount)

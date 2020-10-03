@@ -1,5 +1,6 @@
 package com.gmail.tikrai.payments.repository;
 
+import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.repository.rowmappers.IdMapper;
 import com.gmail.tikrai.payments.repository.rowmappers.PaymentsMapper;
@@ -49,7 +50,7 @@ public class PaymentsRepository {
   }
 
   public List<Payment> findAllPending(BigDecimal min, BigDecimal max) {
-    String sql = String.format("SELECT * FROM %s WHERE %s = false", TABLE, CANCELLED);
+    String sql = String.format("SELECT * FROM %s WHERE %s IS NULL", TABLE, CANCELLED);
     if (min != null) {
       sql = String.format("%s AND %s >= %d", sql, AMOUNT, min.unscaledValue());
     }
@@ -106,10 +107,14 @@ public class PaymentsRepository {
     db.update(sql);
   }
 
-  public Optional<Payment> cancel(int id, BigDecimal fee) {
+  public Optional<Payment> cancel(CancelFee fee) {
     String sql = String.format(
-        "UPDATE %s SET (%s, %s) = (true, %s) WHERE %s = %s RETURNING *",
-        TABLE, CANCELLED, CANCEL_FEE, fee.unscaledValue(), ID, id
+        "UPDATE %s SET (%s, %s) = "
+            + "('%s', %s) "
+            + "WHERE %s = %s RETURNING *",
+        TABLE, CANCELLED, CANCEL_FEE,
+        new Timestamp(fee.time().toEpochMilli()), fee.price().unscaledValue(),
+        ID, fee.id()
     );
     return db.query(sql, rowMapper).stream().findFirst();
   }

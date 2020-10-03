@@ -23,7 +23,7 @@ public class DbInitListener implements ApplicationListener<ContextRefreshedEvent
         "CREATE TABLE IF NOT EXISTS payments("
             + "  id            SERIAL PRIMARY KEY,"
             + "  created       TIMESTAMP NOT NULL,"
-            + "  cancelled     BOOLEAN NOT NULL DEFAULT FALSE,"
+            + "  cancelled     TIMESTAMP,"
             + "  cancel_fee    INTEGER,"
             + "  type          CHAR(5) NOT NULL,"
             + "  amount        INTEGER NOT NULL,"

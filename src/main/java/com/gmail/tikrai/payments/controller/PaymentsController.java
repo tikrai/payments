@@ -2,10 +2,10 @@ package com.gmail.tikrai.payments.controller;
 
 import static java.math.BigDecimal.ROUND_UNNECESSARY;
 
+import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.response.IdResponse;
-import com.gmail.tikrai.payments.response.PaymentCancelFeeResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import com.gmail.tikrai.payments.validation.validators.DecimalValidator;
@@ -52,7 +52,7 @@ public class PaymentsController {
   }
 
   @GetMapping(value = "/cancel_fee/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<PaymentCancelFeeResponse> getCancellingFee(
+  public ResponseEntity<CancelFee> getCancellingFee(
       @PathVariable Integer id
   ) {
     return new ResponseEntity<>(paymentsService.getCancellingFee(id), HttpStatus.OK);
