@@ -39,17 +39,13 @@ public class RestService {
     notifyEndpoints.put(Type.TYPE3, Optional.empty());
   }
 
-  private boolean is2xxOkStatus(HttpStatus httpStatus) {
-    return httpStatus.value() / 100 == 2;
-  }
-
   @Async
   public void notifyPaymentSaved(Payment payment) {
     notifyEndpoints.get(payment.type())
         .map(endpointFormat -> String.format(endpointFormat, payment.id()))
         .map(endpointUrl -> restTemplate.getForEntity(endpointUrl, String.class))
         .map(ResponseEntity::getStatusCode)
-        .map(this::is2xxOkStatus)
+        .map(HttpStatus::is2xxSuccessful)
         .ifPresent(statusIsOk -> paymentsRepository.logNotified(payment.id(), statusIsOk));
   }
 
@@ -57,6 +53,8 @@ public class RestService {
   public void resolveIpAdress(Payment payment) {
     String url = String.format(ipResolveApiUrl, payment.ipAddress().get());
     IpApiResponse response = restTemplate.getForObject(url, IpApiResponse.class);
-    paymentsRepository.logCountry(payment.id(), response.country());
+    if (response != null) {
+      paymentsRepository.logCountry(payment.id(), response.country());
+    }
   }
 }

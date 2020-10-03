@@ -61,7 +61,7 @@ public class PaymentsController {
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Payment> create(
       @RequestBody PaymentRequest request,
-      HttpServletRequest http //todo test better
+      HttpServletRequest http
   ) {
     request.validate();
     Payment payment = request.toDomain(http.getRemoteAddr());

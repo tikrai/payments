@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesRegex;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.gmail.tikrai.payments.IntegrationTestCase;
@@ -14,6 +15,7 @@ import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import com.jayway.restassured.response.Response;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -28,43 +30,84 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
   @Autowired
   PaymentsRepository paymentsRepository;
 
-  private final PaymentRequest payment = Fixture.paymentRequest().build();
-  private final String ipApiResponse = "{\"country\": \"Luminoria\",\"countryCode\": \"LT\"}";
-  private final String notifyApiResponse = "anything";
+  private final PaymentRequest paymentRequest = Fixture.paymentRequest().build();
   private final SleepThread ipApiThread = new SleepThread(200);
   private final SleepThread notifyApiThread = new SleepThread(200);
-  private final String ipApiFormat = "(http://ip-api.com/json/).+";
-  private final String notifyApiFormat = "(http://numbersapi.com/).+";
+
+  private void expectRequestsAndRespondWithSuccess(
+      boolean ipApiResponseSuccess,
+      boolean notifyApiResponseSuccess
+  ) {
+    String ipApiResponse = "{\"country\": \"Paylandia\"}";
+    String notifyApiResponse = "anything";
+    String ipApiFormat = "(http://ip-api.com/json/).+";
+    String notifyApiFormat = "(http://numbersapi.com/).+";
+    mockServer.expect(requestTo(matchesRegex(ipApiFormat)))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(delayedResponse(ipApiResponse, ipApiThread, ipApiResponseSuccess));
+    mockServer.expect(requestTo(matchesRegex(notifyApiFormat)))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(delayedResponse(notifyApiResponse, notifyApiThread, notifyApiResponseSuccess));
+  }
 
   @Test
   void shouldCreatePaymentFastWhenApisAreSlow() throws InterruptedException {
-    mockServer.expect(requestTo(matchesRegex(ipApiFormat)))
-        .andExpect(method(HttpMethod.GET))
-        .andRespond(delayedResponse(ipApiThread, ipApiResponse));
-    mockServer.expect(requestTo(matchesRegex(notifyApiFormat)))
-        .andExpect(method(HttpMethod.GET))
-        .andRespond(delayedResponse(notifyApiThread, notifyApiResponse));
+    expectRequestsAndRespondWithSuccess(true, true);
 
-    Response response = given().body(payment).post(Endpoint.PAYMENTS);
+    Response response = given().body(paymentRequest).post(Endpoint.PAYMENTS);
 
     response.then().statusCode(HttpStatus.CREATED.value());
     Payment actual = response.as(Payment.class);
-    Payment expectedBeforeUpdate = payment.toDomain("127.0.0.1")
+    Payment expected = paymentRequest.toDomain("127.0.0.1")
         .withId(actual.id())
         .withCreated(actual.created());
-    assertThat(actual, equalTo(expectedBeforeUpdate));
-    assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(actual)));
-    ipApiThread.interrupt();
-    notifyApiThread.interrupt();
-    Thread.sleep(400);
-    Payment afterUpdate = Fixture.payment().of(expectedBeforeUpdate)
-        .country("Luminoria")
-        .notified(true).build();
-    assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(afterUpdate)));
-    //todo extract delay labdas and add test create payment with unsuccessfull requests to apis
+    assertThat(actual, equalTo(expected));
+    verifyDbRecords(expected, "Paylandia", true);
   }
 
-  private ResponseCreator delayedResponse(SleepThread sleepThread, String apiResponse) {
+  @Test
+  void shouldCreatePaymentFastWhenApisAreSlowAndIpResolveFails() throws InterruptedException {
+    expectRequestsAndRespondWithSuccess(false, true);
+
+    Response response = given().body(paymentRequest).post(Endpoint.PAYMENTS);
+
+    response.then().statusCode(HttpStatus.CREATED.value());
+    Payment actual = response.as(Payment.class);
+    Payment expected = paymentRequest.toDomain("127.0.0.1")
+        .withId(actual.id())
+        .withCreated(actual.created());
+    assertThat(actual, equalTo(expected));
+    verifyDbRecords(expected, null, true);
+  }
+
+  @Test
+  void shouldCreatePaymentFastWhenApisAreSlowAndNotifyFails() throws InterruptedException {
+    expectRequestsAndRespondWithSuccess(true, false);
+
+    Response response = given().body(paymentRequest).post(Endpoint.PAYMENTS);
+
+    response.then().statusCode(HttpStatus.CREATED.value());
+    Payment actual = response.as(Payment.class);
+    Payment expected = paymentRequest.toDomain("127.0.0.1")
+        .withId(actual.id())
+        .withCreated(actual.created());
+    assertThat(actual, equalTo(expected));
+    verifyDbRecords(expected, "Paylandia", false);
+  }
+
+  private void verifyDbRecords(
+      Payment payment,
+      String country,
+      Boolean notified
+  ) throws InterruptedException {
+    assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(payment)));
+    Payment afterUpdate = Fixture.payment().of(payment).country(country).notified(notified).build();
+    Arrays.asList(ipApiThread, notifyApiThread).forEach(Thread::interrupt);
+    Thread.sleep(400);
+    assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(afterUpdate)));
+  }
+
+  private ResponseCreator delayedResponse(String apiResponse, Thread sleepThread, boolean success) {
     return request -> {
       sleepThread.start();
       try {
@@ -72,7 +115,9 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
       } catch (InterruptedException ignored) {
         //ignored
       }
-      return withSuccess(apiResponse, MediaType.APPLICATION_JSON).createResponse(request);
+      return success
+          ? withSuccess(apiResponse, MediaType.APPLICATION_JSON).createResponse(request)
+          : withServerError().createResponse(request);
     };
   }
 
@@ -91,7 +136,6 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
     assertThat(paymentsRepository.findAll(), equalTo(Collections.emptyList()));
   }
 
-
   @AfterEach
   void verifyMockserver() {
     mockServer.verify();
@@ -101,10 +145,11 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
 
     private final int delay;
 
-    public SleepThread(int delay) {
+    private SleepThread(int delay) {
       this.delay = delay;
     }
 
+    @Override
     public void run() {
       try {
         Thread.sleep(delay);

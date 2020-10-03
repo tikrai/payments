@@ -64,6 +64,16 @@ class RestServiceTest {
     verify(paymentsRepository).logCountry(payment.id(), response.country());
   }
 
+  @Test
+  void shouldFailToResolveIpAddress() {
+    when(restTemplate.getForObject(anyString(), eq(IpApiResponse.class))).thenReturn(null);
+
+    restService.resolveIpAdress(payment);
+
+    String expected = String.format(ipResolveApiUrl, payment.ipAddress().get());
+    verify(restTemplate).getForObject(expected, IpApiResponse.class);
+  }
+
   @AfterEach
   void verifyMocks() {
     verifyNoMoreInteractions(restTemplate, paymentsRepository);
