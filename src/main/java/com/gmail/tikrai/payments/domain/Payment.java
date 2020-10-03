@@ -81,21 +81,6 @@ public class Payment {
         creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
   }
 
-  public Payment withCancelled(Instant cancelled) {
-    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
-  }
-
-  public Payment withCancelFee(BigDecimal cancelFee) {
-    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
-  }
-
-  public Payment withIpAddress(String ipAddress) {
-    return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
-  }
-
   @JsonProperty("id")
   public int id() {
     return id;

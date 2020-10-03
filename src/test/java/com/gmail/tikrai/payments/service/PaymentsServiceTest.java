@@ -131,9 +131,9 @@ class PaymentsServiceTest {
 
   @Test
   void shouldCancelPayment() {
-    Payment cancelled = payment.withCancelled(Instant.now());
+    Payment cancelled = Fixture.payment().of(payment).cancelled(Instant.now()).build();
     when(paymentsRepository.findById(payment.id()))
-        .thenReturn(Optional.of(payment.withCancelFee(zero)));
+        .thenReturn(Optional.of(Fixture.payment().of(payment).cancelFee(zero).build()));
     when(timeService.now()).thenReturn(now);
     when(paymentsRepository.cancel(fee)).thenReturn(Optional.of(cancelled));
 

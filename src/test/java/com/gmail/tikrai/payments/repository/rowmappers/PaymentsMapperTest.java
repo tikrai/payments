@@ -63,7 +63,7 @@ class PaymentsMapperTest {
   void shouldMapPaymentRowSuccessfullyWithNullCancelFee() throws SQLException {
     when(rs.wasNull()).thenReturn(true).thenReturn(false);
     Payment actual = paymentsMapper.mapRow(rs, 0);
-    assertThat(actual, equalTo(payment.withCancelFee(null)));
+    assertThat(actual, equalTo(Fixture.payment().of(payment).cancelFee(null).build()));
   }
 
   @Test

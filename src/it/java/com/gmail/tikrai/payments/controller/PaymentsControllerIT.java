@@ -97,8 +97,10 @@ class PaymentsControllerIT extends IntegrationTestCase {
 
     response.then().statusCode(HttpStatus.OK.value());
     Payment actualCancelled = response.as(Payment.class);
-    Payment expected = payment.withId(actualCancelled.id())
-        .withCancelled(actualCancelled.cancelled().get()).withCancelFee(zero);
+    Payment expected = Fixture.payment().of(payment)
+        .id(actualCancelled.id())
+        .cancelled(actualCancelled.cancelled().get())
+        .cancelFee(zero).build();
     assertThat(actualCancelled, equalTo(expected));
     assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(actualCancelled)));
   }

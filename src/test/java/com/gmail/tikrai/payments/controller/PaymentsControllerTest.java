@@ -159,7 +159,7 @@ class PaymentsControllerTest {
 
   @Test
   void shouldCancelPayment() {
-    Payment cancelled = payment.withCancelled(Instant.now());
+    Payment cancelled = Fixture.payment().of(payment).cancelled(Instant.now()).build();
     when(paymentsService.cancel(payment.id())).thenReturn(cancelled);
 
     ResponseEntity<Payment> actual = paymentsController.cancel(payment.id());

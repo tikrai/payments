@@ -103,7 +103,7 @@ class PaymentsRepositoryTest {
 
   @Test
   void shouldCreatePaymentWithoutIpAddress() {
-    Payment paymentNoIp = payment.withIpAddress(null);
+    Payment paymentNoIp = Fixture.payment().of(payment).ipAddress(null).build();
     when(db.query(anyString(), any(RowMapper.class))).thenReturn(Collections.singletonList(1));
 
     Payment actual = paymentsRepository.create(paymentNoIp);
