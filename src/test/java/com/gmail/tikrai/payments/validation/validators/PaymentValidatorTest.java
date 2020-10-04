@@ -11,7 +11,7 @@ import com.gmail.tikrai.payments.validation.Validator;
 import org.junit.jupiter.api.Test;
 
 class PaymentValidatorTest {
-  private final PaymentRequestFixture requestFixture = Fixture.paymentRequest();
+  private final PaymentRequestFixture requestFixture = Fixture.paymentRequest().bicCode(null);
   private Validator validator;
   private PaymentRequest paymentRequest;
 
@@ -34,6 +34,13 @@ class PaymentValidatorTest {
     paymentRequest = requestFixture.type("TYPE1").currency("LTL").build();
     validator = PaymentValidator.ofType1(paymentRequest);
     assertThat(validator.valid(), isOptionalOf("'currency' must be 'EUR' for TYPE1 payment"));
+  }
+
+  @Test
+  void shoudFailToValidateType1PaymentIfBicCodeIsNotNull() {
+    paymentRequest = requestFixture.type("TYPE1").bicCode("BIC").build();
+    validator = PaymentValidator.ofType1(paymentRequest);
+    assertThat(validator.valid(), isOptionalOf("'bic_code' not available for TYPE1 payment"));
   }
 
   @Test
@@ -66,17 +73,17 @@ class PaymentValidatorTest {
   }
 
   @Test
-  void shoudFailToValidateType2PaymentIfDetailsIsNull() {
-    paymentRequest = requestFixture.type("TYPE2").currency("USD").details(null).build();
+  void shoudFailToValidateType2PaymentIfBicCodeIsNotNull() {
+    paymentRequest = requestFixture.type("TYPE2").currency("USD").bicCode("BIC").build();
     validator = PaymentValidator.ofType2(paymentRequest);
-    assertThat(validator.valid(), isOptionalOf("'details' cannot be null for TYPE2 payment"));
+    assertThat(validator.valid(), isOptionalOf("'bic_code' not available for TYPE2 payment"));
   }
 
 
 
   @Test
   void shoudValidateType3Payment() {
-    paymentRequest = requestFixture.type("TYPE3").build();
+    paymentRequest = requestFixture.type("TYPE3").bicCode("BIC").details(null).build();
     validator = PaymentValidator.ofType3(paymentRequest);
     assertThat(validator.valid(), isOptionalOf(null));
   }
@@ -90,10 +97,16 @@ class PaymentValidatorTest {
 
   @Test
   void shoudFailToValidateType3PaymentIfBicCodeIsNull() {
-    paymentRequest = requestFixture.type("TYPE3").bicCode(null).build();
+    paymentRequest = requestFixture.type("TYPE3").details(null).bicCode(null).build();
     validator = PaymentValidator.ofType3(paymentRequest);
     assertThat(validator.valid(), isOptionalOf("'bic_code' cannot be null for TYPE3 payment"));
   }
 
-
+  @Test
+  void shoudFailToValidateType3PaymentIfDetailsIsNotNull() {
+    paymentRequest =
+        requestFixture.type("TYPE3").currency("USD").bicCode("BIC").details("details").build();
+    validator = PaymentValidator.ofType3(paymentRequest);
+    assertThat(validator.valid(), isOptionalOf("'details' not available for TYPE3 payment"));
+  }
 }

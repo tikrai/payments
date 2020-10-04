@@ -31,7 +31,7 @@ class PaymentsControllerTest {
   private final HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
   private final PaymentsController paymentsController = new PaymentsController(paymentsService);
 
-  private final PaymentRequest paymentRequest = Fixture.paymentRequest().build();
+  private final PaymentRequest paymentRequest = Fixture.paymentRequest().bicCode(null).build();
   private final Payment payment = Fixture.payment().build();
   private final IdResponse paymentId = new IdResponse(payment.id());
   private final List<IdResponse> paymentIdList = Collections.singletonList(paymentId);

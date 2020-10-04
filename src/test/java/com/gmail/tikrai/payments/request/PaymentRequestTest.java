@@ -17,20 +17,20 @@ class PaymentRequestTest {
       + "\"type\":\"TYPE1\",\"amount\":10.01,\"currency\":\"EUR\",\"debtor_iban\":\"LT0001\","
       + "\"creditor_iban\":\"LT9999\",\"bic_code\":\"AGBLLT2X\",\"details\":\"details\""
       + "}";
-  private final PaymentRequestFixture requestFixture = Fixture.paymentRequest();
+  private final PaymentRequestFixture requestFixture = Fixture.paymentRequest().bicCode(null);
 
   private PaymentRequest paymentRequest;
 
   @Test
   void shouldSerializePaymentRequest() throws JsonProcessingException {
-    paymentRequest = requestFixture.build();
+    paymentRequest = requestFixture.bicCode("AGBLLT2X").build();
     String serialized = mapper.writeValueAsString(paymentRequest);
     assertThat(serialized, equalTo(paymentJson));
   }
 
   @Test
   void shouldDeserializePaymentRequest() throws JsonProcessingException {
-    paymentRequest = requestFixture.build();
+    paymentRequest = requestFixture.bicCode("AGBLLT2X").build();
     PaymentRequest deserialized = mapper.readValue(paymentJson, PaymentRequest.class);
     assertThat(deserialized, equalTo(paymentRequest));
   }
@@ -134,15 +134,15 @@ class PaymentRequestTest {
   }
 
   @Test
-  void shouldValidateType2PaymentRequestSuccessfully() {
-    paymentRequest = requestFixture.type("TYPE2").currency("USD").build();
-    assertThat(paymentRequest.valid(), isOptionalOf(null));
+  void shouldFailValidatingType1PaymentIfBicCodeIsNotNull() {
+    paymentRequest = requestFixture.type("TYPE1").bicCode("BIC").build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'bic_code' not available for TYPE1 payment"));
   }
 
   @Test
-  void shouldFailValidatingType2PaymentIfDetailsIsNull() {
-    paymentRequest = requestFixture.type("TYPE2").currency("USD").details(null).build();
-    assertThat(paymentRequest.valid(), isOptionalOf("'details' cannot be null for TYPE2 payment"));
+  void shouldValidateType2PaymentRequestSuccessfully() {
+    paymentRequest = requestFixture.type("TYPE2").currency("USD").build();
+    assertThat(paymentRequest.valid(), isOptionalOf(null));
   }
 
   @Test
@@ -152,14 +152,26 @@ class PaymentRequestTest {
   }
 
   @Test
+  void shouldFailValidatingType2PaymentIfBicCodeIsNotNull() {
+    paymentRequest = requestFixture.type("TYPE2").currency("USD").bicCode("BIC").build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'bic_code' not available for TYPE2 payment"));
+  }
+
+  @Test
   void shouldValidateType3PaymentRequestSuccessfully() {
-    paymentRequest = requestFixture.type("TYPE3").build();
+    paymentRequest = requestFixture.type("TYPE3").bicCode("BIC").details(null).build();
     assertThat(paymentRequest.valid(), isOptionalOf(null));
   }
 
   @Test
   void shouldFailValidatingType3PaymentIfBicCodeIsNull() {
-    paymentRequest = requestFixture.type("TYPE3").bicCode(null).build();
+    paymentRequest = requestFixture.type("TYPE3").details(null).bicCode(null).build();
     assertThat(paymentRequest.valid(), isOptionalOf("'bic_code' cannot be null for TYPE3 payment"));
+  }
+
+  @Test
+  void shouldFailValidatingType3PaymentIfDetailsIsNotNull() {
+    paymentRequest = requestFixture.type("TYPE3").bicCode("BIC").details("details").build();
+    assertThat(paymentRequest.valid(), isOptionalOf("'details' not available for TYPE3 payment"));
   }
 }

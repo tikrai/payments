@@ -3,6 +3,7 @@ package com.gmail.tikrai.payments.controller;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesRegex;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
@@ -30,7 +31,7 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
   @Autowired
   PaymentsRepository paymentsRepository;
 
-  private final PaymentRequest paymentRequest = Fixture.paymentRequest().build();
+  private final PaymentRequest paymentRequest = Fixture.paymentRequest().bicCode(null).build();
   private final SleepThread ipApiThread = new SleepThread(200);
   private final SleepThread notifyApiThread = new SleepThread(200);
 
@@ -132,6 +133,28 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
         .body("status", equalTo(400))
         .body("error", equalTo("Bad Request"))
         .body("message", equalTo("'currency' value 'LTL' is not valid"))
+        .body("path", equalTo(Endpoint.PAYMENTS));
+    assertThat(paymentsRepository.findAll(), equalTo(Collections.emptyList()));
+  }
+
+  @Test
+  void shouldFailToCreatePaymentIfRequestHasUnknownField() {
+    String payment = "{\n"
+        + "    \"type\": \"TYPE2\",\n"
+        + "    \"amount\": 500000.00,\n"
+        + "    \"currency\": \"USD\",\n"
+        + "    \"debtor_iban\": \"from me\",\n"
+        + "    \"creditor_iban\": \"to you\",\n"
+        + "    \"other\": 11\n"
+        + "}";
+
+    Response response = given().body(payment).post(Endpoint.PAYMENTS);
+
+    response.then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body("status", equalTo(400))
+        .body("error", equalTo("Bad Request"))
+        .body("message", startsWith("JSON parse error: Unrecognized field \"other\""))
         .body("path", equalTo(Endpoint.PAYMENTS));
     assertThat(paymentsRepository.findAll(), equalTo(Collections.emptyList()));
   }

@@ -15,7 +15,7 @@ public class ObjectMapperConfiguration {
     return new ObjectMapper()
         .findAndRegisterModules()
         .setSerializationInclusion(Include.NON_ABSENT)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
   }
 }
