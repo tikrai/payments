@@ -7,6 +7,8 @@ import com.gmail.tikrai.payments.response.IpApiResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class RestService {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RestService.class);
   private final RestTemplate restTemplate;
   private final PaymentsRepository paymentsRepository;
   private final String ipResolveApiUrl;
@@ -52,9 +55,14 @@ public class RestService {
   @Async
   public void resolveIpAdress(Payment payment) {
     String url = String.format(ipResolveApiUrl, payment.ipAddress().get());
-    IpApiResponse response = restTemplate.getForObject(url, IpApiResponse.class);
-    if (response != null) {
-      paymentsRepository.logCountry(payment.id(), response.country());
+
+    try {
+      IpApiResponse response = restTemplate.getForObject(url, IpApiResponse.class);
+      LOGGER.info("Payment id {} received from IP:{} country:{}",
+          payment.id(), payment.ipAddress().get(), response.country());
+    } catch (Exception e) {
+      LOGGER.error("Payment id {} received from IP:{}. Country resolve failed",
+          payment.id(), payment.ipAddress().get());
     }
   }
 }

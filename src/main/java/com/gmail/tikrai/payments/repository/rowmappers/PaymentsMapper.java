@@ -28,7 +28,6 @@ public class PaymentsMapper implements RowMapper<Payment> {
         rs.getString(PaymentsRepository.DETAILS),
         getCancelCoeff(rs, PaymentsRepository.COEFF),
         rs.getString(PaymentsRepository.IP_ADDRESS),
-        rs.getString(PaymentsRepository.COUNTRY),
         getBoolean(rs, PaymentsRepository.NOTIFIED)
     );
   }

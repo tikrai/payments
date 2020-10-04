@@ -33,7 +33,6 @@ public class Payment {
   private final String details;
   private final Integer cancelCoeff;
   private final String ipAddress;
-  private final String country;
   private final Boolean notified;
 
   @JsonCreator
@@ -51,7 +50,6 @@ public class Payment {
       String details,
       Integer cancelCoeff,
       String ipAddress,
-      String country,
       Boolean notified
   ) {
     this.id = id;
@@ -67,18 +65,17 @@ public class Payment {
     this.details = details;
     this.cancelCoeff = cancelCoeff;
     this.ipAddress = ipAddress;
-    this.country = country;
     this.notified = notified;
   }
 
   public Payment withId(int id) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, notified);
   }
 
   public Payment withCreated(Instant created) {
     return new Payment(id, created, cancelled, cancelFee, type, amount, currency, debtorIban,
-        creditorIban, bicCode, details, cancelCoeff, ipAddress, country, notified);
+        creditorIban, bicCode, details, cancelCoeff, ipAddress, notified);
   }
 
   @JsonProperty("id")
@@ -146,11 +143,6 @@ public class Payment {
     return Optional.ofNullable(ipAddress);
   }
 
-  @JsonProperty("country")
-  public Optional<String> country() {
-    return Optional.ofNullable(country);
-  }
-
   @JsonProperty("notified")
   public Optional<Boolean> notified() {
     return Optional.ofNullable(notified);
@@ -179,7 +171,6 @@ public class Payment {
         && Objects.equals(details, payment.details)
         && Objects.equals(cancelCoeff, payment.cancelCoeff)
         && Objects.equals(ipAddress, payment.ipAddress)
-        && Objects.equals(country, payment.country)
         && Objects.equals(notified, payment.notified);
   }
 
@@ -188,7 +179,7 @@ public class Payment {
   public int hashCode() {
     return Objects
         .hash(id, created, cancelled, cancelFee, type, amount, currency, debtorIban, creditorIban,
-            bicCode, details, cancelCoeff, ipAddress, country, notified);
+            bicCode, details, cancelCoeff, ipAddress, notified);
   }
 
   @Override
@@ -208,7 +199,6 @@ public class Payment {
         ", details='" + details + '\'' +
         ", cancelCoeff=" + cancelCoeff +
         ", ipAddress='" + ipAddress + '\'' +
-        ", country='" + country + '\'' +
         ", notified=" + notified +
         '}';
   }

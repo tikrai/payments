@@ -61,7 +61,6 @@ class RestServiceTest {
 
     String expected = String.format(ipResolveApiUrl, payment.ipAddress().get());
     verify(restTemplate).getForObject(expected, IpApiResponse.class);
-    verify(paymentsRepository).logCountry(payment.id(), response.country());
   }
 
   @Test

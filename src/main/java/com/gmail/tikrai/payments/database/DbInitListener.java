@@ -33,7 +33,6 @@ public class DbInitListener implements ApplicationListener<ContextRefreshedEvent
             + "  bic_code      VARCHAR(20),"
             + "  details       VARCHAR(255),"
             + "  ipAddress     VARCHAR(255),"
-            + "  country       VARCHAR(50),"
             + "  notified      BOOLEAN"
             + ");",
         "CREATE TABLE IF NOT EXISTS cancel_coeff("

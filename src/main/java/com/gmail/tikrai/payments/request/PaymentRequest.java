@@ -58,7 +58,6 @@ public class PaymentRequest implements Validator {
         details,
         null,
         ipAddress,
-        null,
         null
     );
   }

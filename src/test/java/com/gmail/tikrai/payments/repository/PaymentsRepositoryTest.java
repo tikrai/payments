@@ -122,16 +122,6 @@ class PaymentsRepositoryTest {
   }
 
   @Test
-  void shouldLogCountry() {
-    String country = "Paylandia";
-    paymentsRepository.logCountry(payment.id(), country);
-
-    String expectedQuery = String
-        .format("UPDATE payments SET (country) = ('%s') WHERE id = %s", country, payment.id());
-    verify(db).update(eq(expectedQuery));
-  }
-
-  @Test
   void shouldLogNotified() {
     boolean success = true;
     paymentsRepository.logNotified(payment.id(), success);
@@ -139,11 +129,6 @@ class PaymentsRepositoryTest {
     String expectedQuery = String
         .format("UPDATE payments SET (notified) = ('%s') WHERE id = %s", success, payment.id());
     verify(db).update(eq(expectedQuery));
-  }
-
-  @Test
-  void shouldSkipLoggingCountryIfNull() {
-    paymentsRepository.logCountry(1, null);
   }
 
   @Test

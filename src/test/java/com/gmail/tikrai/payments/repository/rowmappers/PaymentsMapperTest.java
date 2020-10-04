@@ -48,7 +48,6 @@ class PaymentsMapperTest {
     when(rs.getString(PaymentsRepository.DETAILS)).thenReturn(payment.details().orElse(null));
     when(rs.getInt(PaymentsRepository.COEFF)).thenReturn(cancelCoeff);
     when(rs.getString(PaymentsRepository.IP_ADDRESS)).thenReturn(payment.ipAddress().orElse(null));
-    when(rs.getString(PaymentsRepository.COUNTRY)).thenReturn(payment.country().orElse(null));
     when(rs.getBoolean(PaymentsRepository.NOTIFIED)).thenReturn(payment.notified().orElse(false));
   }
 
@@ -96,7 +95,6 @@ class PaymentsMapperTest {
     verify(rs).getString(PaymentsRepository.DETAILS);
     verify(rs).getInt(PaymentsRepository.COEFF);
     verify(rs).getString(PaymentsRepository.IP_ADDRESS);
-    verify(rs).getString(PaymentsRepository.COUNTRY);
     verify(rs).getBoolean(PaymentsRepository.NOTIFIED);
     verify(rs, times(2)).wasNull();
     verifyNoMoreInteractions(rs);

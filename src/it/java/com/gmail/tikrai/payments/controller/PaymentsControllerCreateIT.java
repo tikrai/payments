@@ -64,7 +64,7 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
         .withId(actual.id())
         .withCreated(actual.created());
     assertThat(actual, equalTo(PaymentResponse.of(expected)));
-    verifyDbRecords(expected, "Paylandia", true);
+    verifyDbRecords(expected, true);
   }
 
   @Test
@@ -79,7 +79,7 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
         .withId(actual.id())
         .withCreated(actual.created());
     assertThat(actual, equalTo(PaymentResponse.of(expected)));
-    verifyDbRecords(expected, null, true);
+    verifyDbRecords(expected, true);
   }
 
   @Test
@@ -94,16 +94,12 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
         .withId(actual.id())
         .withCreated(actual.created());
     assertThat(actual, equalTo(PaymentResponse.of(expected)));
-    verifyDbRecords(expected, "Paylandia", false);
+    verifyDbRecords(expected, false);
   }
 
-  private void verifyDbRecords(
-      Payment payment,
-      String country,
-      Boolean notified
-  ) throws InterruptedException {
+  private void verifyDbRecords(Payment payment, Boolean notified) throws InterruptedException {
     assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(payment)));
-    Payment afterUpdate = Fixture.payment().of(payment).country(country).notified(notified).build();
+    Payment afterUpdate = Fixture.payment().of(payment).notified(notified).build();
     Arrays.asList(ipApiThread, notifyApiThread).forEach(Thread::interrupt);
     Thread.sleep(400);
     assertThat(paymentsRepository.findAll(), equalTo(Collections.singletonList(afterUpdate)));

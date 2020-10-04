@@ -29,7 +29,6 @@ public class PaymentsRepository {
   public static final String BIC_CODE = "bic_code";
   public static final String DETAILS = "details";
   public static final String IP_ADDRESS = "ipaddress";
-  public static final String COUNTRY = "country";
   public static final String NOTIFIED = "notified";
   public static final String TABLE_COEFF = "cancel_coeff";
   public static final String COEFF = "coeff";
@@ -92,14 +91,6 @@ public class PaymentsRepository {
     );
     int id = db.query(sql, idMapper).stream().findFirst().orElse(0);
     return payment.withId(id);
-  }
-
-  public void logCountry(int id, String country) {
-    if (country != null) {
-      String sql = String
-          .format("UPDATE %s SET (%s) = ('%s') WHERE %s = %s", TABLE, COUNTRY, country, ID, id);
-      db.update(sql);
-    }
   }
 
   public void logNotified(int id, boolean success) {
