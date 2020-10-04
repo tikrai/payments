@@ -35,7 +35,7 @@ public class PaymentsController {
     this.paymentsService = paymentsService;
   }
 
-  @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<IdResponse>> findAllPending(
       @RequestParam(required = false) BigDecimal min,
       @RequestParam(required = false) BigDecimal max
@@ -51,7 +51,7 @@ public class PaymentsController {
     return new ResponseEntity<>(paymentsService.findAllPending(min, max), HttpStatus.OK);
   }
 
-  @GetMapping(value = "/cancel_fee/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<CancelFee> getCancellingFee(
       @PathVariable Integer id
   ) {

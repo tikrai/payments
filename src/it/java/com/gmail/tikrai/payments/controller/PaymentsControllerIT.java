@@ -23,16 +23,14 @@ class PaymentsControllerIT extends IntegrationTestCase {
   @Autowired
   PaymentsRepository paymentsRepository;
 
-  private final Payment payment = Fixture.payment().cancelled(null).build();
-  private final String getAllPaymentsPath = String.format("%s/%s", Endpoint.PAYMENTS, "all");
-  private final String cancelFeePath = String.format("%s/%s", Endpoint.PAYMENTS, "cancel_fee");
+  private final Payment payment = Fixture.payment().build();
   private final BigDecimal zero = BigDecimal.valueOf(0, 2);
 
   @Test
   void shouldGetSinglePendingPayment() {
     Payment actualPayment = paymentsRepository.create(payment);
 
-    Response response = given().get(getAllPaymentsPath);
+    Response response = given().get(Endpoint.PAYMENTS);
 
     response.then().statusCode(HttpStatus.OK.value());
     IdResponse[] payments = {new IdResponse(actualPayment.id())};
@@ -43,7 +41,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
   void shouldGetSinglePendingPaymentFromRange() {
     Payment actualPayment = paymentsRepository.create(payment);
 
-    Response response = given().get(getAllPaymentsPath + "?min=1&max=100");
+    Response response = given().get(String.format("%s?min=1&max=100", Endpoint.PAYMENTS));
 
     response.then().statusCode(HttpStatus.OK.value());
     IdResponse[] payments = {new IdResponse(actualPayment.id())};
@@ -54,7 +52,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
   void shouldGetNoPendingPaymentFromRangeIfRangeIsWrong() {
     paymentsRepository.create(payment);
 
-    Response response = given().get(getAllPaymentsPath + "?min=99&max=100");
+    Response response = given().get(String.format("%s?min=99&max=100", Endpoint.PAYMENTS));
 
     response.then().statusCode(HttpStatus.OK.value());
     IdResponse[] payments = {};
@@ -68,7 +66,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
     CancelFee fee = new CancelFee(cancelledPayment.id(), true, zero, Instant.now());
     paymentsRepository.cancel(fee);
 
-    Response response = given().get(getAllPaymentsPath);
+    Response response = given().get(Endpoint.PAYMENTS);
 
     response.then().statusCode(HttpStatus.OK.value());
     IdResponse[] payments = {new IdResponse(actualPayment.id())};
@@ -78,7 +76,7 @@ class PaymentsControllerIT extends IntegrationTestCase {
   @Test
   void shouldGetPaymentById() {
     Payment actualPayment = paymentsRepository.create(payment);
-    String path = String.format("%s/%s", cancelFeePath, actualPayment.id());
+    String path = String.format("%s/%s", Endpoint.PAYMENTS, actualPayment.id());
 
     Response response = given().get(path);
 
