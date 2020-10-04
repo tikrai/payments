@@ -6,6 +6,7 @@ import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.response.IdResponse;
+import com.gmail.tikrai.payments.response.PaymentResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import com.gmail.tikrai.payments.validation.validators.DecimalValidator;
@@ -44,7 +45,7 @@ public class PaymentsController {
     DecimalValidator.maxDecimals("max", max, 2).validate();
     SizeValidator.min("min", min, BigDecimal.ZERO).validate();
     SizeValidator.min("max", max, BigDecimal.ZERO).validate();
-    SizeValidator.min("max", max, min, "'max' must be greater than or equal than 'min'").validate();
+    SizeValidator.min("max", max, min, "'max' must be greater than or equal to 'min'").validate();
 
     min = min == null ? null : min.setScale(2, ROUND_UNNECESSARY);
     max = max == null ? null : max.setScale(2, ROUND_UNNECESSARY);
@@ -59,19 +60,20 @@ public class PaymentsController {
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Payment> create(
+  public ResponseEntity<PaymentResponse> create(
       @RequestBody PaymentRequest request,
       HttpServletRequest http
   ) {
     request.validate();
     Payment payment = request.toDomain(http.getRemoteAddr());
-    return new ResponseEntity<>(paymentsService.create(payment), HttpStatus.CREATED);
+    PaymentResponse response = PaymentResponse.of(paymentsService.create(payment));
+    return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Payment> cancel(
+  public ResponseEntity<PaymentResponse> cancel(
       @PathVariable("id") int id
   ) {
-    return new ResponseEntity<>(paymentsService.cancel(id), HttpStatus.OK);
+    return new ResponseEntity<>(PaymentResponse.of(paymentsService.cancel(id)), HttpStatus.OK);
   }
 }

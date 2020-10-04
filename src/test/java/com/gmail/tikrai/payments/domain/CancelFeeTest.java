@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class CancelFeeTest {
   private final ObjectMapper mapper = Fixture.mapper();
   private final String responseJson =
-      "{\"id\":1,\"cancel_possible\":true,\"price\":1,\"time\":\"2009-02-13T23:31:30Z\"}";
+      "{\"id\":1,\"cancel_possible\":true,\"fee\":1,\"time\":\"2009-02-13T23:31:30Z\"}";
   private final CancelFee response =
       new CancelFee(1, true, BigDecimal.ONE, Instant.ofEpochSecond(1234567890));
 

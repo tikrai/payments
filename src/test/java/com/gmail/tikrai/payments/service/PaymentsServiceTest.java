@@ -12,7 +12,7 @@ import com.gmail.tikrai.payments.domain.CancelFee;
 import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.domain.Payment.Type;
 import com.gmail.tikrai.payments.exception.ConflictException;
-import com.gmail.tikrai.payments.exception.PaymentNotFoundException;
+import com.gmail.tikrai.payments.exception.ResourceNotFoundException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import com.gmail.tikrai.payments.response.IdResponse;
@@ -59,14 +59,14 @@ class PaymentsServiceTest {
     Instant requestTime = createTime.plus(Duration.ofHours(hours));
     Payment payment = Fixture.payment().type(Type.TYPE1).cancelCoeff(5).created(createTime).build();
     when(timeService.now()).thenReturn(requestTime);
-    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
+    when(paymentsRepository.findNonCancelledById(payment.id())).thenReturn(Optional.of(payment));
 
     CancelFee actualResponse = paymentsService.getCancellingFee(payment.id());
 
-    BigDecimal expactedPrice = BigDecimal.valueOf(payment.cancelCoeff().get() * hours, 2);
-    CancelFee expectedResponse = new CancelFee(0, true, expactedPrice, requestTime);
+    BigDecimal expectedFee = BigDecimal.valueOf(payment.cancelCoeff().get() * hours, 2);
+    CancelFee expectedResponse = new CancelFee(0, true, expectedFee, requestTime);
     assertThat(actualResponse, equalTo(expectedResponse));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
   }
 
@@ -75,14 +75,14 @@ class PaymentsServiceTest {
     Instant requestTime = createTime.plus(Duration.ofHours(1).minus(Duration.ofSeconds(1)));
     Payment payment = Fixture.payment().of(this.payment).created(createTime).build();
     when(timeService.now()).thenReturn(requestTime);
-    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
+    when(paymentsRepository.findNonCancelledById(payment.id())).thenReturn(Optional.of(payment));
 
     CancelFee actualResponse = paymentsService.getCancellingFee(payment.id());
 
-    BigDecimal expectedPrice = BigDecimal.valueOf(0, 2);
-    CancelFee expectedResponse = new CancelFee(0, true, expectedPrice, requestTime);
+    BigDecimal expectedFee = BigDecimal.valueOf(0, 2);
+    CancelFee expectedResponse = new CancelFee(0, true, expectedFee, requestTime);
     assertThat(actualResponse, equalTo(expectedResponse));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
   }
 
@@ -90,28 +90,30 @@ class PaymentsServiceTest {
   void shouldGetCancellingNotPossibleById() {
     when(timeService.now()).thenReturn(now);
     Payment oldPayment = payment.withCreated(now.minus(Duration.ofHours(25)));
-    when(paymentsRepository.findById(oldPayment.id())).thenReturn(Optional.of(oldPayment));
+    when(paymentsRepository.findNonCancelledById(oldPayment.id()))
+        .thenReturn(Optional.of(oldPayment));
 
     CancelFee actual = paymentsService.getCancellingFee(oldPayment.id());
 
     CancelFee expected = new CancelFee(0, false, null, now);
     assertThat(actual, equalTo(expected));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
   }
 
   @Test
   void shouldFailToGetCancellingFeeByIdIfNotExists() {
-    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.empty());
+    when(paymentsRepository.findNonCancelledById(payment.id())).thenReturn(Optional.empty());
 
     String message = assertThrows(
-        PaymentNotFoundException.class,
+        ResourceNotFoundException.class,
         () -> paymentsService.getCancellingFee(payment.id())
     ).getMessage();
 
-    String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());
+    String expectedMessage =
+        String.format("Non cancelled payment with id '%s' was not found", payment.id());
     assertThat(message, equalTo(expectedMessage));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
   }
 
   @Test
@@ -132,7 +134,7 @@ class PaymentsServiceTest {
   @Test
   void shouldCancelPayment() {
     Payment cancelled = Fixture.payment().of(payment).cancelled(Instant.now()).build();
-    when(paymentsRepository.findById(payment.id()))
+    when(paymentsRepository.findNonCancelledById(payment.id()))
         .thenReturn(Optional.of(Fixture.payment().of(payment).cancelFee(zero).build()));
     when(timeService.now()).thenReturn(now);
     when(paymentsRepository.cancel(fee)).thenReturn(Optional.of(cancelled));
@@ -140,39 +142,41 @@ class PaymentsServiceTest {
     Payment actual = paymentsService.cancel(payment.id());
 
     assertThat(actual, equalTo(cancelled));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
     verify(paymentsRepository).cancel(fee);
   }
 
   @Test
   void shouldFailToCancelPaymentIfNotExists() {
-    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.empty());
+    when(paymentsRepository.findNonCancelledById(payment.id())).thenReturn(Optional.empty());
 
     String message = assertThrows(
-        PaymentNotFoundException.class,
+        ResourceNotFoundException.class,
         () -> paymentsService.cancel(payment.id())
     ).getMessage();
 
-    String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());
+    String expectedMessage =
+        String.format("Non cancelled payment with id '%s' was not found", payment.id());
     assertThat(message, equalTo(expectedMessage));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
   }
 
   @Test
   void shouldFailToCancelPaymentIfAfterCalculationDoNotExistAnymore() {
-    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(payment));
+    when(paymentsRepository.findNonCancelledById(payment.id())).thenReturn(Optional.of(payment));
     when(timeService.now()).thenReturn(now);
     when(paymentsRepository.cancel(fee)).thenReturn(Optional.empty());
 
     String message = assertThrows(
-        PaymentNotFoundException.class,
+        ResourceNotFoundException.class,
         () -> paymentsService.cancel(payment.id())
     ).getMessage();
 
-    String expectedMessage = String.format("Payment with id '%s' was not found", payment.id());
+    String expectedMessage =
+        String.format("Non cancelled payment with id '%s' was not found", payment.id());
     assertThat(message, equalTo(expectedMessage));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
     verify(paymentsRepository).cancel(fee);
   }
@@ -181,7 +185,7 @@ class PaymentsServiceTest {
   void shouldFailToCancelPaymentIfPeriodExpired() {
     when(timeService.now()).thenReturn(now);
     Payment expired = payment.withCreated(now.minus(Duration.ofHours(25)));
-    when(paymentsRepository.findById(payment.id())).thenReturn(Optional.of(expired));
+    when(paymentsRepository.findNonCancelledById(payment.id())).thenReturn(Optional.of(expired));
 
     String message = assertThrows(
         ConflictException.class,
@@ -190,7 +194,7 @@ class PaymentsServiceTest {
 
     String expectedMessage = String.format("Not possible to cancel payment '%s'", payment.id());
     assertThat(message, equalTo(expectedMessage));
-    verify(paymentsRepository).findById(payment.id());
+    verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
   }
 

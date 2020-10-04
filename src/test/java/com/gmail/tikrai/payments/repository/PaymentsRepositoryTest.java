@@ -72,12 +72,12 @@ class PaymentsRepositoryTest {
   void shouldFindPaymentById() {
     when(db.query(anyString(), any(RowMapper.class))).thenReturn(paymentList);
 
-    Optional<Payment> actual = paymentsRepository.findById(payment.id());
+    Optional<Payment> actual = paymentsRepository.findNonCancelledById(payment.id());
 
     assertThat(actual, equalTo(Optional.of(payment)));
     String expectedQuery = String.format("SELECT payments.*, cancel_coeff.coeff "
         + "FROM payments LEFT JOIN cancel_coeff ON payments.type = cancel_coeff.type "
-        + "WHERE id = '%s'",
+        + "WHERE id = '%s' AND cancelled IS NULL",
         payment.id());
     verify(db).query(eq(expectedQuery), any(RowMapper.class));
   }

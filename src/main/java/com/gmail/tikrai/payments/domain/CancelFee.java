@@ -10,19 +10,19 @@ import java.util.Objects;
 public class CancelFee {
   private final int id;
   private final boolean cancelPossible;
-  private final BigDecimal price;
+  private final BigDecimal fee;
   private final Instant time;
 
   @JsonCreator
   public CancelFee(
       @JsonProperty("id") int id,
       @JsonProperty("cancel_possible") boolean cancelPossible,
-      @JsonProperty("price") BigDecimal price,
+      @JsonProperty("fee") BigDecimal fee,
       @JsonProperty("time") Instant time
   ) {
     this.id = id;
     this.cancelPossible = cancelPossible;
-    this.price = price;
+    this.fee = fee;
     this.time = time;
   }
 
@@ -36,9 +36,9 @@ public class CancelFee {
     return cancelPossible;
   }
 
-  @JsonProperty("price")
-  public BigDecimal price() {
-    return price;
+  @JsonProperty("fee")
+  public BigDecimal fee() {
+    return fee;
   }
 
   @JsonProperty("time")
@@ -58,14 +58,14 @@ public class CancelFee {
     CancelFee that = (CancelFee) o;
     return id == that.id
         && cancelPossible == that.cancelPossible
-        && Objects.equals(price, that.price)
+        && Objects.equals(fee, that.fee)
         && Objects.equals(time, that.time);
   }
 
   @Override
   @Generated
   public int hashCode() {
-    return Objects.hash(id, cancelPossible, price, time);
+    return Objects.hash(id, cancelPossible, fee, time);
   }
 
   @Override
@@ -74,7 +74,7 @@ public class CancelFee {
     return "CancelFee{" +
         "id=" + id +
         ", cancelPossible=" + cancelPossible +
-        ", price=" + price +
+        ", fee=" + fee +
         ", time=" + time +
         '}';
   }

@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import org.junit.jupiter.api.Test;
 
-class IdResponseTest {  private final ObjectMapper mapper = Fixture.mapper();
+class IdResponseTest {
+  private final ObjectMapper mapper = Fixture.mapper();
   private final String responseJson = "{\"id\":1}";
   private final IdResponse response = new IdResponse(1);
 

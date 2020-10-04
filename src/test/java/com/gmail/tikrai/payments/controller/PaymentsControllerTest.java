@@ -15,6 +15,7 @@ import com.gmail.tikrai.payments.exception.ValidationException;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.request.PaymentRequest;
 import com.gmail.tikrai.payments.response.IdResponse;
+import com.gmail.tikrai.payments.response.PaymentResponse;
 import com.gmail.tikrai.payments.service.PaymentsService;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -119,7 +120,7 @@ class PaymentsControllerTest {
         () -> paymentsController.findAllPending(one, zero)
     ).getMessage();
 
-    assertThat(message, equalTo("'max' must be greater than or equal than 'min'"));
+    assertThat(message, equalTo("'max' must be greater than or equal to 'min'"));
   }
 
   @Test
@@ -137,9 +138,10 @@ class PaymentsControllerTest {
   void shouldCreateNewPayment() {
     when(paymentsService.create(any(Payment.class))).thenReturn(payment);
 
-    ResponseEntity<Payment> actual = paymentsController.create(paymentRequest, httpServletRequest);
+    ResponseEntity<PaymentResponse> actual =
+        paymentsController.create(paymentRequest, httpServletRequest);
 
-    Payment expected = payment.withCreated(actual.getBody().created());
+    PaymentResponse expected = PaymentResponse.of(payment.withCreated(actual.getBody().created()));
     assertThat(actual, equalTo(new ResponseEntity<>(expected, HttpStatus.CREATED)));
     verify(paymentsService).create(any(Payment.class));
     verify(httpServletRequest).getRemoteAddr();
@@ -162,9 +164,9 @@ class PaymentsControllerTest {
     Payment cancelled = Fixture.payment().of(payment).cancelled(Instant.now()).build();
     when(paymentsService.cancel(payment.id())).thenReturn(cancelled);
 
-    ResponseEntity<Payment> actual = paymentsController.cancel(payment.id());
+    ResponseEntity<PaymentResponse> actual = paymentsController.cancel(payment.id());
 
-    assertThat(actual, equalTo(new ResponseEntity<>(cancelled, HttpStatus.OK)));
+    assertThat(actual, equalTo(new ResponseEntity<>(PaymentResponse.of(cancelled), HttpStatus.OK)));
     verify(paymentsService).cancel(payment.id());
   }
 

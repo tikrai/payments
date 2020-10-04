@@ -60,15 +60,16 @@ public class PaymentsRepository {
     return db.query(sql, rowMapper);
   }
 
-  public Optional<Payment> findById(int id) {
+  public Optional<Payment> findNonCancelledById(int id) {
     String sql = String.format("SELECT %s.*, %s.%s FROM %s "
             + "LEFT JOIN %s "
             + "ON %s.%s = %s.%s "
-            + "WHERE %s = '%s'",
+            + "WHERE %s = '%s' AND %s IS NULL",
         TABLE, TABLE_COEFF, COEFF, TABLE,
         TABLE_COEFF,
         TABLE, TYPE, TABLE_COEFF, TYPE,
-        ID, id);
+        ID, id, CANCELLED
+    );
     return db.query(sql, rowMapper).stream().filter(Objects::nonNull).findFirst();
   }
 
@@ -107,14 +108,14 @@ public class PaymentsRepository {
     db.update(sql);
   }
 
-  public Optional<Payment> cancel(CancelFee fee) {
+  public Optional<Payment> cancel(CancelFee cancelFee) {
     String sql = String.format(
         "UPDATE %s SET (%s, %s) = "
             + "('%s', %s) "
             + "WHERE %s = %s RETURNING *",
         TABLE, CANCELLED, CANCEL_FEE,
-        new Timestamp(fee.time().toEpochMilli()), fee.price().unscaledValue(),
-        ID, fee.id()
+        new Timestamp(cancelFee.time().toEpochMilli()), cancelFee.fee().unscaledValue(),
+        ID, cancelFee.id()
     );
     return db.query(sql, rowMapper).stream().findFirst();
   }

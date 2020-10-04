@@ -14,6 +14,7 @@ import com.gmail.tikrai.payments.domain.Payment;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.repository.PaymentsRepository;
 import com.gmail.tikrai.payments.request.PaymentRequest;
+import com.gmail.tikrai.payments.response.PaymentResponse;
 import com.gmail.tikrai.payments.util.RestUtil.Endpoint;
 import com.jayway.restassured.response.Response;
 import java.util.Arrays;
@@ -58,11 +59,11 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
     Response response = given().body(paymentRequest).post(Endpoint.PAYMENTS);
 
     response.then().statusCode(HttpStatus.CREATED.value());
-    Payment actual = response.as(Payment.class);
+    PaymentResponse actual = response.as(PaymentResponse.class);
     Payment expected = paymentRequest.toDomain("127.0.0.1")
         .withId(actual.id())
         .withCreated(actual.created());
-    assertThat(actual, equalTo(expected));
+    assertThat(actual, equalTo(PaymentResponse.of(expected)));
     verifyDbRecords(expected, "Paylandia", true);
   }
 
@@ -73,11 +74,11 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
     Response response = given().body(paymentRequest).post(Endpoint.PAYMENTS);
 
     response.then().statusCode(HttpStatus.CREATED.value());
-    Payment actual = response.as(Payment.class);
+    PaymentResponse actual = response.as(PaymentResponse.class);
     Payment expected = paymentRequest.toDomain("127.0.0.1")
         .withId(actual.id())
         .withCreated(actual.created());
-    assertThat(actual, equalTo(expected));
+    assertThat(actual, equalTo(PaymentResponse.of(expected)));
     verifyDbRecords(expected, null, true);
   }
 
@@ -88,11 +89,11 @@ class PaymentsControllerCreateIT extends IntegrationTestCase {
     Response response = given().body(paymentRequest).post(Endpoint.PAYMENTS);
 
     response.then().statusCode(HttpStatus.CREATED.value());
-    Payment actual = response.as(Payment.class);
+    PaymentResponse actual = response.as(PaymentResponse.class);
     Payment expected = paymentRequest.toDomain("127.0.0.1")
         .withId(actual.id())
         .withCreated(actual.created());
-    assertThat(actual, equalTo(expected));
+    assertThat(actual, equalTo(PaymentResponse.of(expected)));
     verifyDbRecords(expected, "Paylandia", false);
   }
 
