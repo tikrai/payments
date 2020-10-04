@@ -1,0 +1,511 @@
+openapi: '3.0.0'
+info:
+  title: Payments API
+  description: |
+    <h2>Payments API created based on requirements:</h2>
+    <h3>Payment creation</h3>
+    Client should be able to create payment of one of 3 types - TYPE1, TYPE2, TYPE3. Fields 'amount'
+    (positive decimal), 'currency' (EUR or USD), 'debtor_iban' and 'creditor_iban' (texts) are
+    mandatory for all types.<br>
+    Additional type-specific requirements:<br>
+    TYPE1 is only applicable for EUR payments, has additional field 'details' (text)
+    which is mandatory;<br>
+    TYPE2 is only applicable for USD payments, has additional field ‘details’ (text)
+    which is optional.<br>
+    TYPE3 is applicable for payments in both EUR and USD currency, has additional field
+    for creditor bank BIC code (text) which is mandatory.<br>
+
+    <h3>Payment cancelation</h3>
+    Client should be able to cancel the payment. It is possible to cancel payment only on the day
+    of creation before 00:00. When cancel happens, cancelation fee should be calculated and saved
+    along the payment in database.<br>
+    Cancelation fee is calculated as: h * k, where:<br>
+    h - number of full hours (2:59 = 2h) payment is in system; <br>
+    k - coefficient (0.05 for TYPE1; 0.1 for TYPE2, 0.15 for TYPE3). <br>
+    Result is an amount in EUR.<br>
+
+    <h3>Payments querying</h3>
+    It should be possible to query all payments that aren't canceled as well as filter them by
+    amount. Query should return payment IDs. There should also be an option to query specific
+    payment by ID, and it should return payment ID and cancelation fee.<br>
+
+    <h3>Client country logging</h3>
+    Resolve clients country (use any external web service to resolve it by user IP) and write it
+    to the log (that’s OK if it will fail sometimes). Information about clients country won't be
+    required anywhere in business logic.<br>
+    <h3>Notification</h3>
+    Imagine other (micro)service should be notified about the fact we saved valid TYPE1 or TYPE2
+    payment. The fact that external service was (un-)successfully notified should be saved to our
+    database.<br>
+    Send HTTP GET requests to resources of your choice (should be different for TYPE1 and TYPE2
+    payments). Consider any 2XX response status code as a success.
+  version: '1.0.0'
+servers:
+  - url: http://localhost:7777
+    description: Local server
+tags:
+  - name: payments
+    description: Payment storing, cancelling, access and cancel fee calculation
+  - name: health
+    description: Service health information
+paths:
+  /payments:
+    get:
+      tags:
+        - payments
+      operationId: getPayments
+      summary: Get payments
+      description: Get IDs of payments that are not cancelled, filtered by optional min/max values
+      parameters:
+        - $ref: '#/components/parameters/min'
+        - $ref: '#/components/parameters/max'
+      responses:
+        200:
+          description: List of non-cancelled payment IDs, that match filter criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IdResponse'
+        400:
+          description: Request validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 400
+                error: Bad Request
+                message: "'max' must be greater than or equal to 'min'"
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+        500:
+          description: The service is temporary unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 500
+                error: Service Unavailable
+                message: Database is temporary unavailable
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+    post:
+      tags:
+        - payments
+      operationId: createPayment
+      summary: Create new payment
+      description: Creates a new payment entry
+      requestBody:
+        description: New payment data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        201:
+          description: Payment was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        400:
+          description: Request validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 400
+                error: Bad Request
+                message: "'currency' value 'LTL' is not valid"
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+        500:
+          description: The service is temporary unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 500
+                error: Service Unavailable
+                message: Database is temporary unavailable
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+  /payments/{id}:
+    get:
+      tags:
+        - payments
+      operationId: getPaymnetCancelFee
+      summary: Get payment cancel fee
+      description: |
+        Get payment cancel fee by payment ID. Cancelation fee is calculated as: <b>h * k</b>, where:<br>
+        h - number of full hours (2:59 = 2h) payment is in system<br>
+        k - coefficient (0.05 for TYPE1; 0.1 for TYPE2, 0.15 for TYPE3)<br>
+        Result is an amount in EUR
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        200:
+          description: Payment cancel fee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelFeeResponse'
+        400:
+          description: Request validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 400
+                error: Bad Request
+                message: "Failed to convert value of type 'java.lang.String' to required type 'java.lang.Integer'"
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+        404:
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 404
+                error: Not Found
+                message: "Non cancelled payment with id '42' was not found"
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+        500:
+          description: The service is temporary unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 500
+                error: Service Unavailable
+                message: Database is temporary unavailable
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+    delete:
+      tags:
+        - payments
+      operationId: cancelPayment
+      summary: Cancel payment
+      description: Cancel payment
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        200:
+          description: Payment was successfully cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        400:
+          description: Request validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 400
+                error: Bad Request
+                message: "Failed to convert value of type 'java.lang.String' to required type 'java.lang.Integer'"
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+        404:
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 404
+                error: Not Found
+                message: "Non cancelled payment with id '42' was not found"
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+        500:
+          description: The service is temporary unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 500
+                error: Service Unavailable
+                message: Database is temporary unavailable
+                path: /payments
+                timestamp: '2020-10-01T14:00:00Z'
+  /health:
+    get:
+      tags:
+        - health
+      operationId: health
+      summary: Service health check
+      description: Returns health status UP or DOWN.
+      responses:
+        200:
+          description: The API is operational
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status: UP
+                components:
+                  db:
+                    status: UP
+                    details:
+                      database: "PostgreSQL"
+                      result": 1
+                      validationQuery: "SELECT 1"
+                  diskspace:
+                    status: UP
+                    details:
+                      total: 19205710336,
+                      free:  11217336832,
+                      threshold: 10485760
+                  ipResolveApi:
+                    status: UP
+                  notificationApi:
+                    status: UP
+                  ping:
+                    status: UP
+        503:
+          description: The service is temporary unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status: DOWN
+                components:
+                  db:
+                    status: DOWN
+                    details:
+                      error: "Connection is not available"
+                  diskspace:
+                    status: UP
+                    details:
+                      total: 19205710336,
+                      free:  11217336832,
+                      threshold: 10485760
+                  ipResolveApi:
+                    status: UP
+                  notificationApi:
+                    status: UP
+                  ping:
+                    status: UP
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+    IdResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 42
+    CancelFeeResponse:
+      type: object
+      properties:
+        id:
+          description: ID of payment
+          type: integer
+          format: int32
+          example: 42
+        cancel_possible:
+          description: True if cancel is possible, false if cancel is not possible
+          type: boolean
+          example: true
+        fee:
+          description: Cancel fee amount in EUR
+          type: number
+          format: double
+          example: 0.10
+        time:
+          description: UTC time when cancelling fee was calculated
+          type: string
+          format: date-time
+          example: '2017-01-12T14:00:00Z'
+    PaymentRequest:
+      type: object
+      required:
+        - type
+        - amount
+        - currency
+        - debtor_iban
+        - creditor_iban
+      properties:
+        type:
+          description: Type of payment
+          type: string
+          enum:
+            - TYPE1
+            - TYPE2
+            - TYPE3
+          example: TYPE3
+        amount:
+          description: Amount of payment. Maximum of 2 effective decimal digits allowed
+          type: number
+          format: double
+          minimum: 0
+          example: 10.01
+        currency:
+          description: Currency of payment
+          type: string
+          enum:
+            - EUR
+            - USD
+          example: EUR
+        debtor_iban:
+          description: Debtor IBAN number
+          type: string
+          example: LT12 3456 7890 1234 5678
+          maxLength: 20
+        creditor_iban:
+          description: Creditor IBAN number
+          type: string
+          example: LT12 3456 7890 1234 5678
+          maxLength: 20
+        bic_code:
+          description: Creditor bank BIC code. Mandatory for TYPE3 payment, N/A for TYPE1 and TYPE2 payment
+          type: string
+          example: AGBLLT2X
+          maxLength: 20
+        details:
+          description: Payment details. Mandatory for TYPE1 payment, optional for TYPE2 payment, N/A for TYPE3 payment
+          type: string
+          example: Apartment reservation
+          maxLength: 255
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          description: Assigned payment ID
+          type: integer
+          format: int32
+          example: 42
+        created:
+          description: Date and time payment was created (UTC)
+          type: string
+          format: date-time
+          example: '2017-01-12T14:00:00Z'
+        cancelled:
+          description: Date and time payment was cancelled (UTC). Only available on cancel payment request
+          type: string
+          format: date-time
+          example: '2017-01-12T14:00:00Z'
+        type:
+          description: Type of payment
+          type: string
+          enum:
+            - TYPE1
+            - TYPE2
+            - TYPE3
+          example: TYPE3
+        amount:
+          description: Amount of payment
+          type: number
+          format: double
+          example: 10.01
+        currency:
+          description: Currency of payment
+          type: string
+          enum:
+            - EUR
+            - USD
+          example: EUR
+        debtor_iban:
+          description: Debtor IBAN number
+          type: string
+          example: LT12 3456 7890 1234 5678
+        creditor_iban:
+          description: Creditor IBAN number
+          type: string
+          example: LT12 3456 7890 1234 5678
+        bic_code:
+          description: Creditor bank BIC code. Available for TYPE3 payment, N/A for TYPE1 and TYPE2 payment
+          type: string
+          example: AGBLLT2X
+        details:
+          description: Payment details. Available for TYPE1 payment, optional for TYPE2 payment, N/A for TYPE3 payment
+          type: string
+          example: Apartment reservation
+    Status:
+      type: object
+      properties:
+        status:
+          type: string
+        components:
+          $ref: '#/components/schemas/Components'
+    Components:
+      type: object
+      properties:
+        db:
+          $ref: '#/components/schemas/ComponentStatus'
+        diskSpace:
+          $ref: '#/components/schemas/ComponentStatus'
+        ping:
+          $ref: '#/components/schemas/ComponentStatus'
+    ComponentStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        details:
+          type: object
+
+  parameters:
+    id:
+      name: id
+      in: path
+      description: Payment ID
+      required: true
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        example: 42
+    min:
+      name: min
+      in: query
+      description: Minimum payment amount. Must be less or equal to max
+      required: false
+      schema:
+        type: number
+        format: double
+        minimum: 0
+        example: 10.20
+    max:
+      name: max
+      in: query
+      description: Maximum payment amount. Must be more or equal to min
+      required: false
+      schema:
+        type: number
+        format: double
+        minimum: 0
+        example: 100.99
