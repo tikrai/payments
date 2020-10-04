@@ -32,14 +32,16 @@ public class RestService {
       RestTemplate restTemplate,
       PaymentsRepository paymentsRepository,
       @Value("${payments.ipResolveApiUrl}") String ipResolveApiUrl,
-      @Value("${payments.notifyApi}") String notifyApi
+      @Value("${payments.type1notifyApiUrl}") String type1notifyApiUrl,
+      @Value("${payments.type2notifyApiUrl}") String type2notifyApiUrl,
+      @Value("${payments.type3notifyApiUrl}") String type3notifyApiUrl
   ) {
     this.restTemplate = restTemplate;
     this.paymentsRepository = paymentsRepository;
     this.ipResolveApiUrl = ipResolveApiUrl;
-    notifyEndpoints.put(Type.TYPE1, Optional.of(String.format("%s/%%s", notifyApi)));
-    notifyEndpoints.put(Type.TYPE2, Optional.of(String.format("%s/%%s/math", notifyApi)));
-    notifyEndpoints.put(Type.TYPE3, Optional.empty());
+    notifyEndpoints.put(Type.TYPE1, Optional.ofNullable(type1notifyApiUrl));
+    notifyEndpoints.put(Type.TYPE2, Optional.ofNullable(type2notifyApiUrl));
+    notifyEndpoints.put(Type.TYPE3, Optional.ofNullable(type3notifyApiUrl));
   }
 
   @Async

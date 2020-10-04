@@ -22,9 +22,12 @@ class RestServiceTest {
   private final RestTemplate restTemplate = mock(RestTemplate.class);
   private final PaymentsRepository paymentsRepository = mock(PaymentsRepository.class);
   private final String ipResolveApiUrl = "www.get/%s";
-  private final String notifyApi = "http://numbersapi.com";
-  private final RestService restService =
-      new RestService(restTemplate, paymentsRepository, ipResolveApiUrl, notifyApi);
+  private final String type1notifyApiUrl = "http://numbersapi.com/%s";
+  private final String type2notifyApiUrl = "http://numbersapi.com/%s/math";
+  private final String type3notifyApiUrl = null;
+  private final RestService restService = new RestService(
+      restTemplate, paymentsRepository, ipResolveApiUrl, type1notifyApiUrl,
+      type2notifyApiUrl, type3notifyApiUrl);
 
   private final Payment payment = Fixture.payment().build();
 
@@ -35,7 +38,7 @@ class RestServiceTest {
 
     restService.notifyPaymentSaved(payment);
 
-    String expected = String.format("%s/%s", notifyApi, payment.id());
+    String expected = String.format(type1notifyApiUrl, payment.id());
     verify(restTemplate).getForEntity(expected, String.class);
     verify(paymentsRepository).logNotified(payment.id(), true);
   }
@@ -47,7 +50,7 @@ class RestServiceTest {
 
     restService.notifyPaymentSaved(payment);
 
-    String expected = String.format("%s/%s", notifyApi, payment.id());
+    String expected = String.format(type1notifyApiUrl, payment.id());
     verify(restTemplate).getForEntity(expected, String.class);
     verify(paymentsRepository).logNotified(payment.id(), false);
   }
