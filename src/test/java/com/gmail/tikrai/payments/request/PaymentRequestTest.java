@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gmail.tikrai.payments.fixture.Fixture;
 import com.gmail.tikrai.payments.fixture.PaymentRequestFixture;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
 class PaymentRequestTest {
@@ -63,6 +64,13 @@ class PaymentRequestTest {
   void shouldFailValidatingIfAmountIsInvalid() {
     paymentRequest = requestFixture.amount(0).build();
     String expected = "'amount' must be greater than or equal to 0.01";
+    assertThat(paymentRequest.valid(), isOptionalOf(expected));
+  }
+
+  @Test
+  void shouldFailValidatingIfAmountHasTooManyDecimals() {
+    paymentRequest = requestFixture.amount(BigDecimal.valueOf(1.0005)).build();
+    String expected = "'amount' value '1.0005' must be rounded to 2 decimal digits";
     assertThat(paymentRequest.valid(), isOptionalOf(expected));
   }
 

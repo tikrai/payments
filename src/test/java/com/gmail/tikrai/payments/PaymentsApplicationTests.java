@@ -2,6 +2,8 @@ package com.gmail.tikrai.payments;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.gmail.tikrai.payments.config.DocumentationViewConfiguration;
@@ -37,6 +39,7 @@ class PaymentsApplicationTests {
     //covers DbInitListener
     JdbcTemplate db = mock(JdbcTemplate.class);
     new DbInitListener(db).onApplicationEvent(null);
+    verify(db, times(3)).update(anyString());
 
     //covers RestUtil
     new RestUtil();

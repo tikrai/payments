@@ -12,11 +12,16 @@ import org.junit.jupiter.api.Test;
 class PaymentResponseTest {
   private final ObjectMapper mapper = Fixture.mapper();
   private final String responseJson = "{"
-      + "\"id\":0,\"created\":\"1973-11-29T21:33:09Z\",\"type\":\"TYPE1\",\"amount\":10.01,"
-      + "\"currency\":\"EUR\",\"debtor_iban\":\"LT0001\",\"creditor_iban\":\"LT9999\","
-      + "\"bic_code\":\"AGBLLT2X\",\"details\":\"details\"}";
+      + "\"id\":42,\"created\":\"1973-11-29T21:33:09Z\",\"cancelled\":\"2009-02-13T23:31:30Z\","
+      + "\"type\":\"TYPE1\",\"amount\":10.01,\"currency\":\"EUR\",\"debtor_iban\":\"LT0001\","
+      + "\"creditor_iban\":\"LT9999\",\"bic_code\":\"AGBLLT2X\",\"details\":\"details\"}";
   private final PaymentResponse response =
-      PaymentResponse.of(Fixture.payment().created(Instant.ofEpochSecond(123456789)).build());
+      PaymentResponse.of(
+          Fixture.payment()
+              .created(Instant.ofEpochSecond(123456789))
+              .cancelled(Instant.ofEpochSecond(1234567890))
+              .build()
+      );
 
   @Test
   void shouldSerializePaymentResponse() throws JsonProcessingException {

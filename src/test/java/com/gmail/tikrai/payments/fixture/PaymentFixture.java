@@ -8,7 +8,7 @@ import java.time.Instant;
 
 public class PaymentFixture {
 
-  private int id = 0;
+  private int id = 42;
   private Instant created = Instant.now();
   private Instant cancelled = null;
   private BigDecimal cancelFee = null;

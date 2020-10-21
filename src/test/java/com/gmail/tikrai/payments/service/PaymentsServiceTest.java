@@ -64,7 +64,7 @@ class PaymentsServiceTest {
     CancelFee actualResponse = paymentsService.getCancellingFee(payment.id());
 
     BigDecimal expectedFee = BigDecimal.valueOf(payment.cancelCoeff().get() * hours, 2);
-    CancelFee expectedResponse = new CancelFee(0, true, expectedFee, requestTime);
+    CancelFee expectedResponse = new CancelFee(payment.id(), true, expectedFee, requestTime);
     assertThat(actualResponse, equalTo(expectedResponse));
     verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
@@ -80,7 +80,7 @@ class PaymentsServiceTest {
     CancelFee actualResponse = paymentsService.getCancellingFee(payment.id());
 
     BigDecimal expectedFee = BigDecimal.valueOf(0, 2);
-    CancelFee expectedResponse = new CancelFee(0, true, expectedFee, requestTime);
+    CancelFee expectedResponse = new CancelFee(payment.id(), true, expectedFee, requestTime);
     assertThat(actualResponse, equalTo(expectedResponse));
     verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
@@ -95,7 +95,7 @@ class PaymentsServiceTest {
 
     CancelFee actual = paymentsService.getCancellingFee(oldPayment.id());
 
-    CancelFee expected = new CancelFee(0, false, null, now);
+    CancelFee expected = new CancelFee(payment.id(), false, null, now);
     assertThat(actual, equalTo(expected));
     verify(paymentsRepository).findNonCancelledById(payment.id());
     verify(timeService).now();
