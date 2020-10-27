@@ -9,7 +9,6 @@ on:
   pull_request:
     branches: [ master ]
   workflow_dispatch:
-    branches: [ master ]
 
 jobs:
   build:
@@ -23,11 +22,12 @@ jobs:
           POSTGRES_DB: payments_test
           POSTGRES_USER: payments
           POSTGRES_PASSWORD: payments
+        # wait for postgres is up
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
+          --health-interval 2s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 15
         ports:
           - 25432:5432
 
@@ -50,3 +50,36 @@ jobs:
 
     - name: Build with Maven
       run: mvn -B verify
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Manual Push to Docker Hub
+      run:
+        docker push tikrai/payments
+
+#    - name: Push to Docker Hub
+#      uses: docker/build-push-action@v1
+#      env:
+#        JAR_FILE: payments-0.0.1.jar
+#      with:
+#        username: ${{ secrets.DOCKER_USERNAME }}
+#        password: ${{ secrets.DOCKER_PASSWORD }}
+#        repository: tikrai/payments
+#        tag_with_ref: true
+#
+#    - name: Debug
+#      env:
+#        ZAZA_FILE: payments-0.0.1.jar
+#      run: |
+#        ls -la
+#        echo ===============================================
+#        echo $JAR_FILE
+#        echo ===============================================
+#        ls target -la
+#        echo ===============================================
+#        echo $ZAZA_FILE
+

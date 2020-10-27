@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.gmail.tikrai</groupId>
 	<artifactId>payments</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>payments</name>
 	<description>Payment processing application</description>
 
@@ -20,6 +20,7 @@
 		<pmd.version>3.12.0</pmd.version>
 		<findbugs.version>3.0.5</findbugs.version>
 		<jacoco.version>0.8.5</jacoco.version>
+		<dockerfile.version>1.4.13</dockerfile.version>
 	</properties>
 
 	<dependencies>
@@ -212,6 +213,27 @@
 					</dependency>
 				</dependencies>
 			</plugin>  <!-- for running code mutation tests manually -->
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile.version}</version>
+				<executions>
+					<execution>
+						<id>default</id>
+						<goals>
+							<goal>build</goal>
+<!--							<goal>push</goal>-->
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<repository>docker.io/tikrai/payments</repository>
+					<tag>${project.version}</tag>
+					<buildArgs>
+						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+					</buildArgs>
+				</configuration>
+			</plugin>  <!-- build/deploy docker image -->
 		</plugins>
 	</build>
 
@@ -224,5 +246,4 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
 </project>
